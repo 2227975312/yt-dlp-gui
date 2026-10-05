@@ -116,11 +116,10 @@ export const useVideoStore = defineStore("video", () => {
       const videoOnlyFormats = formats
         .filter((f) => f.vcodec && f.vcodec !== "none" && (!f.acodec || f.acodec === "none"))
         .sort(compareVideoFormats);
-      const combinedFormats = formats
+      // 部分站点只提供已封装音视频的单文件格式，这类格式单独成组，不能与纯视频流混合
+      const muxedFormats = formats
         .filter((f) => f.vcodec && f.vcodec !== "none" && f.acodec && f.acodec !== "none")
         .sort(compareVideoFormats);
-      // 部分站点只提供已封装音视频的单文件格式；没有纯视频流时不能把这些格式全部过滤掉。
-      const videoFormats = videoOnlyFormats.length ? videoOnlyFormats : combinedFormats;
       const audioFormats = formats
         .filter((f) => f.acodec && f.acodec !== "none" && (!f.vcodec || f.vcodec === "none"))
         .sort(compareAudioFormats);
@@ -141,7 +140,8 @@ export const useVideoStore = defineStore("video", () => {
       return {
         url: targetUrl,
         videoInfo,
-        videoFormats,
+        videoFormats: videoOnlyFormats,
+        muxedFormats,
         audioFormats,
         isPlaylist,
         playlistEntries,

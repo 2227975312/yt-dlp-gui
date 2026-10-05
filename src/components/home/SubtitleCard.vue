@@ -125,30 +125,37 @@ const groupedOptions = computed(() => {
 });
 
 const hasSubtitles = computed(() => manualOptions.value.length > 0 || autoOptions.value.length > 0);
+
+/** 没有任何字幕内容时整块隐藏，仅在直播弹幕提示仍然有效时保留 */
+const visible = computed(() => hasSubtitles.value || (isLiveRelated.value && hasLiveChat.value));
 </script>
 
 <template>
-  <n-card :title="$t('detail.subtitles')" size="small">
-    <template v-if="hasSubtitles">
-      <n-select
-        v-model:value="selectedSubtitles"
-        :options="groupedOptions"
-        multiple
-        clearable
-        size="small"
-        :placeholder="$t('detail.selectSubtitleLangs')"
-        max-tag-count="responsive"
-      />
-      <n-text
-        v-if="isLiveRelated && hasLiveChat"
-        depth="3"
-        style="font-size: 12px; margin-top: 4px"
-      >
-        {{ $t("detail.liveChatSubtitleHint") }}
-      </n-text>
-    </template>
-    <n-text v-else depth="3" style="font-size: 13px">
-      {{ $t("detail.noSubtitles") }}
+  <n-card v-if="visible" :title="$t('detail.subtitles')" size="small">
+    <n-select
+      v-if="hasSubtitles"
+      v-model:value="selectedSubtitles"
+      :options="groupedOptions"
+      multiple
+      clearable
+      size="small"
+      :placeholder="$t('detail.selectSubtitleLangs')"
+      max-tag-count="responsive"
+    />
+    <n-text v-else depth="3" class="subtitle-note">{{ $t("detail.noSubtitles") }}</n-text>
+    <n-text v-if="isLiveRelated && hasLiveChat" depth="3" class="subtitle-note">
+      {{ $t("detail.liveChatSubtitleHint") }}
     </n-text>
   </n-card>
 </template>
+
+<style scoped lang="scss">
+.subtitle-note {
+  display: block;
+  font-size: 12px;
+
+  & + & {
+    margin-top: 4px;
+  }
+}
+</style>

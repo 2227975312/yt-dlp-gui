@@ -1,6 +1,8 @@
 <script setup lang="ts">
 defineProps<{
   estimatedSizeText: string;
+  /** 未选择任何格式时不允许下载 */
+  disabled?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -13,11 +15,17 @@ const emit = defineEmits<{
     <n-card size="small" class="bottom-card">
       <n-flex align="center" justify="space-between">
         <n-flex align="center" :size="4" class="size-info">
-          <icon-mdi-file-outline />
-          <n-text depth="3">{{ $t("detail.estimatedSize") }}</n-text>
-          <n-text strong>{{ estimatedSizeText }}</n-text>
+          <template v-if="disabled">
+            <icon-mdi-information-outline />
+            <n-text depth="3">{{ $t("detail.selectFormatHint") }}</n-text>
+          </template>
+          <template v-else>
+            <icon-mdi-file-outline />
+            <n-text depth="3">{{ $t("detail.estimatedSize") }}</n-text>
+            <n-text strong>{{ estimatedSizeText }}</n-text>
+          </template>
         </n-flex>
-        <n-button type="primary" round @click="emit('download')">
+        <n-button type="primary" round :disabled="disabled" @click="emit('download')">
           <template #icon>
             <n-icon>
               <icon-mdi-download />

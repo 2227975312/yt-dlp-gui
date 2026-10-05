@@ -35,6 +35,15 @@ export const estimateFileSize = (
 ): { size: number; isEstimated: boolean } => resolveFileSize(format);
 
 /**
+ * 格式化码率描述：1000 kbps 以上换算成 Mbps，避免卡片里出现长数字
+ */
+export const formatBitrateLabel = (kbps?: number | null): string => {
+  if (!kbps || kbps <= 0) return "";
+  if (kbps >= 1000) return `${(kbps / 1000).toFixed(1)} Mbps`;
+  return `${Math.round(kbps)} kbps`;
+};
+
+/**
  * 格式化分辨率描述
  */
 export const formatResolutionLabel = (height?: number | null, _width?: number | null): string => {
@@ -147,6 +156,7 @@ export const normalizeVideoFormat = (
     filesizeLabel,
     isEstimatedSize: isEstimated,
     bitrate,
+    bitrateLabel: formatBitrateLabel(bitrate),
     raw: format,
   };
 };
@@ -168,7 +178,7 @@ export const normalizeAudioFormat = (
   const languageLabel = formatLanguageLabel(language);
   const { role, label: roleLabel } = detectAudioRole(format);
   const bitrate = format.abr || format.tbr || 0;
-  const bitrateLabel = bitrate > 0 ? `${Math.round(bitrate)} kbps` : "";
+  const bitrateLabel = formatBitrateLabel(bitrate);
   const filesizeLabel =
     size > 0 ? (isEstimated ? `~${formatFileSize(size)}` : formatFileSize(size)) : "—";
 

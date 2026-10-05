@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { formatFileSize } from "@/utils/format";
 import { estimateFileSize } from "@/utils/normalizer";
+import { findSelectedVideoFormat, resolveDownloadMode } from "@/utils/formats";
 import { useVideoStore } from "@/stores/video";
 import { useSettingStore } from "@/stores/setting";
 import { usePendingStore } from "@/stores/pending";
@@ -62,16 +63,17 @@ watch(persistedOptionSnapshot, (snapshot) => {
 const estimatedSize = computed(() => {
   const item = activeItem.value;
   if (!item) return 0;
+  const downloadMode = resolveDownloadMode(item.selectedVideoFormat, item.selectedAudioFormat);
   let total = 0;
   const duration = item.videoInfo?.duration || 0;
-  if (item.downloadMode !== "audio") {
-    const vf = item.videoFormats.find((f) => f.format_id === item.selectedVideoFormat);
+  if (downloadMode !== "audio") {
+    const vf = findSelectedVideoFormat(item);
     if (vf) {
       const { size } = estimateFileSize(vf, duration);
       total += size;
     }
   }
-  if (item.downloadMode !== "video") {
+  if (downloadMode !== "video") {
     const af = item.audioFormats.find((f) => f.format_id === item.selectedAudioFormat);
     if (af) {
       const { size } = estimateFileSize(af, duration);
@@ -87,6 +89,11 @@ const estimatedSizeText = computed(() => {
 });
 
 const dirCardRef = ref<HTMLElement | null>(null);
+
+/** 音视频轨道一个都没选时不允许下载 */
+const hasFormatSelection = computed(
+  () => Boolean(activeItem.value?.selectedVideoFormat || activeItem.value?.selectedAudioFormat),
+);
 
 const tabLabel = (title: string): string => {
   if (!title) return t("detail.unknownVideo");
@@ -235,12 +242,13 @@ const handleDownload = async () => {
         </n-card>
 
         <DownloadOptionsCard
-          v-model:download-mode="activeItem.downloadMode"
           v-model:selected-video-format="activeItem.selectedVideoFormat"
           v-model:selected-audio-format="activeItem.selectedAudioFormat"
           :video-formats="activeItem.videoFormats"
+          :muxed-formats="activeItem.muxedFormats"
           :audio-formats="activeItem.audioFormats"
           :video-info="activeItem.videoInfo as VideoInfo"
+          :no-merge="activeItem.noMerge"
           class="section-card"
         />
 
@@ -276,7 +284,11 @@ const handleDownload = async () => {
           <DownloadDirCard />
         </div>
 
-        <DownloadBar :estimated-size-text="estimatedSizeText" @download="handleDownload" />
+        <DownloadBar
+          :estimated-size-text="estimatedSizeText"
+          :disabled="!hasFormatSelection"
+          @download="handleDownload"
+        />
       </div>
     </template>
 

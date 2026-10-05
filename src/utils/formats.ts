@@ -1,4 +1,4 @@
-import type { VideoFormat } from "@/types";
+import type { DownloadMode, PendingItem, VideoFormat } from "@/types";
 
 export const getCodecKey = (codec: string): string => {
   const normalized = codec.toLowerCase();
@@ -18,7 +18,7 @@ export const getCodecKey = (codec: string): string => {
 
 const CODEC_LABELS: Record<string, string> = {
   h264: "H.264",
-  hevc: "H.265 / HEVC",
+  hevc: "H.265",
   av1: "AV1",
   vp9: "VP9",
   vp8: "VP8",
@@ -35,6 +35,31 @@ export const getCodecLabel = (codec: string): string => {
   const key = getCodecKey(codec);
   return CODEC_LABELS[key] || key.toUpperCase();
 };
+
+/**
+ * 由所选轨道推导下载模式，避免模式与格式选择两份状态互相打架。
+ *
+ * 两条轨道都选中 → 合并下载；只选中一条 → 仅下载该条轨道；
+ * 两条都没选（站点未提供可选格式）时回落 default，交由 yt-dlp 自行挑选。
+ */
+export const resolveDownloadMode = (videoFormat: string, audioFormat: string): DownloadMode => {
+  if (videoFormat && !audioFormat) return "video";
+  if (!videoFormat && audioFormat) return "audio";
+  return "default";
+};
+
+/** 该格式是否自带音轨（仅视频流时 acodec 为 none） */
+export const hasAudioStream = (format: VideoFormat): boolean =>
+  Boolean(format.acodec && format.acodec !== "none");
+
+/**
+ * 查找所选视频格式：所选格式可能来自纯视频轨或含音频轨，两份列表都要检索
+ */
+export const findSelectedVideoFormat = (
+  item: Pick<PendingItem, "videoFormats" | "muxedFormats" | "selectedVideoFormat">,
+): VideoFormat | undefined =>
+  item.videoFormats.find((format) => format.format_id === item.selectedVideoFormat) ??
+  item.muxedFormats.find((format) => format.format_id === item.selectedVideoFormat);
 
 const audioRoleRank = (format: VideoFormat): number => {
   const description = `${format.format_note || ""} ${format.format || ""}`.toLowerCase();

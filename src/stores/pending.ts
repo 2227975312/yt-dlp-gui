@@ -1,17 +1,26 @@
 import { defineStore } from "pinia";
 import { useSettingStore } from "@/stores/setting";
 import type { FetchedVideoData, PendingItem, VideoFormat } from "@/types";
+import { resolveDownloadMode } from "@/utils/formats";
 
 const generateId = () => `pd_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
-const selectVideoFormat = (formats: VideoFormat[], maxHeight?: number): string => {
-  if (!maxHeight) return formats[0]?.format_id ?? "";
-  return (
-    formats.find((format) => format.height != null && format.height <= maxHeight)?.format_id ??
-    formats[0]?.format_id ??
-    ""
-  );
+const pickVideoFormat = (formats: VideoFormat[], maxHeight?: number): string => {
+  if (!formats.length) return "";
+  if (!maxHeight) return formats[0].format_id;
+  return (formats.find((format) => format.height != null && format.height <= maxHeight) ?? formats[0])
+    .format_id;
 };
+
+/**
+ * 预选视频格式：优先纯视频轨（可搭配音轨合并），站点仅提供封装格式时回落到含音频轨
+ */
+const selectVideoFormat = (
+  videoFormats: VideoFormat[],
+  muxedFormats: VideoFormat[],
+  maxHeight?: number,
+): string =>
+  pickVideoFormat(videoFormats, maxHeight) || pickVideoFormat(muxedFormats, maxHeight);
 
 /**
  * 根据解析后的视频元数据创建新的待下载任务配置对象
@@ -22,15 +31,21 @@ const selectVideoFormat = (formats: VideoFormat[], maxHeight?: number): string =
  */
 export const createPendingItem = (data: FetchedVideoData, quick = false): PendingItem => {
   const settingStore = useSettingStore();
+  // 快速下载预设同样以“选中哪些轨道”表达：未选中的轨道直接不选格式
+  const quickMode = quick ? settingStore.quickDownloadMode : "default";
   const maxHeight = quick ? settingStore.quickMaxHeight : undefined;
+  const videoFormat =
+    quickMode === "audio" ? "" : selectVideoFormat(data.videoFormats, data.muxedFormats, maxHeight);
+  let audioFormat = quickMode === "video" ? "" : (data.audioFormats[0]?.format_id ?? "");
+  // 预设轨道在该站点不存在时（例如对纯音频源要求“仅视频”）兜底选中可用轨道，避免无可下载内容
+  if (!videoFormat && !audioFormat) audioFormat = data.audioFormats[0]?.format_id ?? "";
   return {
     ...data,
     id: generateId(),
     createdAt: Date.now(),
     selectedPlaylistItems: data.isPlaylist ? data.playlistEntries.map((_, i) => i + 1) : [],
-    downloadMode: quick ? settingStore.quickDownloadMode : "default",
-    selectedVideoFormat: selectVideoFormat(data.videoFormats, maxHeight),
-    selectedAudioFormat: data.audioFormats[0]?.format_id ?? "",
+    selectedVideoFormat: videoFormat,
+    selectedAudioFormat: audioFormat,
     startTime: null,
     endTime: null,
     embedSubs: quick ? false : settingStore.defaultEmbedSubs,
@@ -107,15 +122,19 @@ export const usePendingStore = defineStore("pending", () => {
   const refresh = (id: string, data: FetchedVideoData): void => {
     const item = items.value.find((i) => i.id === id);
     if (!item) return;
+    // 刷新会重置格式选择，但保留用户原来的“仅视频 / 仅音频 / 合并”意图
+    const mode = resolveDownloadMode(item.selectedVideoFormat, item.selectedAudioFormat);
     item.url = data.url;
     item.videoInfo = data.videoInfo;
     item.videoFormats = data.videoFormats;
+    item.muxedFormats = data.muxedFormats;
     item.audioFormats = data.audioFormats;
     item.isPlaylist = data.isPlaylist;
     item.playlistEntries = data.playlistEntries;
     item.selectedPlaylistItems = data.isPlaylist ? data.playlistEntries.map((_, i) => i + 1) : [];
-    item.selectedVideoFormat = data.videoFormats[0]?.format_id ?? "";
-    item.selectedAudioFormat = data.audioFormats[0]?.format_id ?? "";
+    item.selectedVideoFormat =
+      mode === "audio" ? "" : selectVideoFormat(data.videoFormats, data.muxedFormats);
+    item.selectedAudioFormat = mode === "video" ? "" : (data.audioFormats[0]?.format_id ?? "");
   };
 
   /**

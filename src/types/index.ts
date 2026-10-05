@@ -3,6 +3,12 @@ export type YtdlpChannel = "stable" | "nightly" | "master";
 export type HomeMode = "standard" | "batch";
 export type HomeDownloadBehavior = "pending" | "quick";
 
+/**
+ * 下载模式：由所选音视频轨道推导而来。
+ * 两条轨道都选中 → default（合并下载）；只选中其中一条 → video / audio。
+ */
+export type DownloadMode = "default" | "video" | "audio";
+
 export interface CliOpenRequest {
   url: string | null;
   cookieFile: string | null;
@@ -89,6 +95,7 @@ export interface NormalizedVideoFormat {
   filesizeLabel: string;
   isEstimatedSize: boolean;
   bitrate: number;
+  bitrateLabel: string;
   raw: VideoFormat;
 }
 
@@ -150,7 +157,7 @@ export interface ExtraOptions {
 export interface DownloadTaskParams {
   url: string;
   downloadDir: string;
-  downloadMode: string;
+  downloadMode: DownloadMode;
   videoFormat: string | null;
   audioFormat: string | null;
   cookieFile: string | null;
@@ -213,7 +220,11 @@ export interface DownloadTask {
 export interface FetchedVideoData {
   url: string;
   videoInfo: VideoInfo;
+  /** 纯视频流（不含音轨），可与音频流合并 */
   videoFormats: VideoFormat[];
+  /** 已封装音轨的视频流，单独下载即为成品文件 */
+  muxedFormats: VideoFormat[];
+  /** 纯音频流 */
   audioFormats: VideoFormat[];
   isPlaylist: boolean;
   playlistEntries: PlaylistEntry[];
@@ -223,7 +234,6 @@ export interface PendingItem extends FetchedVideoData {
   id: string;
   createdAt: number;
   selectedPlaylistItems: number[];
-  downloadMode: "default" | "video" | "audio";
   selectedVideoFormat: string;
   selectedAudioFormat: string;
   startTime: number | null;

@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { setI18nLocale, resolveLocale } from "@/locales";
 import { DEFAULT_OUTPUT_TEMPLATE } from "@/utils/output-template";
-import type { HomeDownloadBehavior, HomeMode, YtdlpChannel } from "@/types";
+import type { DownloadMode, HomeDownloadBehavior, HomeMode, YtdlpChannel } from "@/types";
 
 /** 默认最大同时下载数 */
 export const DEFAULT_CONCURRENT_DOWNLOADS = 3;
@@ -32,7 +32,7 @@ export const useSettingStore = defineStore(
     const homeDownloadBehavior = ref<HomeDownloadBehavior>("pending");
 
     /** 快速下载默认参数 */
-    const quickDownloadMode = ref<"default" | "video" | "audio">("default");
+    const quickDownloadMode = ref<DownloadMode>("default");
     const quickMaxHeight = ref(1080);
     const quickEmbedThumbnail = ref(false);
     const quickWriteThumbnail = ref(false);

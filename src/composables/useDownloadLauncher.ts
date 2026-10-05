@@ -5,6 +5,7 @@ import {
   composeOutputTemplate,
   validateOutputTemplate,
 } from "@/utils/output-template";
+import { findSelectedVideoFormat, hasAudioStream, resolveDownloadMode } from "@/utils/formats";
 import { useDownloadStore } from "@/stores/download";
 import { useSettingStore } from "@/stores/setting";
 import { useStatusStore } from "@/stores/status";
@@ -40,19 +41,21 @@ export const useDownloadLauncher = () => {
 
   const buildFormatLabel = (item: PendingItem): string => {
     const parts: string[] = [];
-    if (item.downloadMode === "audio") {
+    const downloadMode = resolveDownloadMode(item.selectedVideoFormat, item.selectedAudioFormat);
+    if (downloadMode === "audio") {
       parts.push(t("detail.audioOnly"));
       const audio = item.audioFormats.find(
         (format) => format.format_id === item.selectedAudioFormat,
       );
       if (audio) parts.push(audio.format_note || audio.ext);
     } else {
-      const video = item.videoFormats.find(
-        (format) => format.format_id === item.selectedVideoFormat,
-      );
+      const video = findSelectedVideoFormat(item);
       if (video?.height) parts.push(`${video.height}p`);
       if (video?.fps) parts.push(`${video.fps}fps`);
-      if (item.downloadMode === "video") parts.push(t("detail.videoOnly"));
+      // 含音频的封装格式本身就是成品文件，不能标成“仅视频”
+      if (downloadMode === "video" && video && !hasAudioStream(video)) {
+        parts.push(t("detail.videoOnly"));
+      }
     }
 
     if (item.startTime != null || item.endTime != null) {
@@ -135,8 +138,9 @@ export const useDownloadLauncher = () => {
       return "missing-directory";
     }
 
+    const downloadMode = resolveDownloadMode(item.selectedVideoFormat, item.selectedAudioFormat);
     const requiresFfmpegMerge =
-      item.downloadMode === "default" &&
+      downloadMode === "default" &&
       Boolean(item.selectedVideoFormat) &&
       Boolean(item.selectedAudioFormat) &&
       !item.noMerge;
@@ -174,7 +178,7 @@ export const useDownloadLauncher = () => {
     const params = {
       url: item.url,
       downloadDir: settingStore.downloadDir,
-      downloadMode: item.downloadMode,
+      downloadMode,
       videoFormat: item.selectedVideoFormat || null,
       audioFormat: item.selectedAudioFormat || null,
       cookieFile,
