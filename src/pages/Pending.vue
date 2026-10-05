@@ -7,6 +7,7 @@ import { useSettingStore } from "@/stores/setting";
 import { usePendingStore } from "@/stores/pending";
 import { useDownloadLauncher } from "@/composables/useDownloadLauncher";
 import { useI18n } from "vue-i18n";
+import { useThemeVars } from "naive-ui";
 import type { VideoInfo } from "@/types";
 
 const { t } = useI18n();
@@ -15,6 +16,15 @@ const videoStore = useVideoStore();
 const settingStore = useSettingStore();
 const pendingStore = usePendingStore();
 const { launchDownload } = useDownloadLauncher();
+
+/** 标签条配色跟随主题，避免硬编码色值 */
+const themeVars = useThemeVars();
+const tabStripStyle = computed(() => ({
+  "--tab-strip-slot": themeVars.value.actionColor,
+  "--tab-strip-border": themeVars.value.dividerColor,
+  "--tab-strip-accent": themeVars.value.primaryColor,
+  "--tab-strip-accent-hover": themeVars.value.primaryColorHover,
+}));
 
 const activeItem = computed(() => pendingStore.activeItem);
 
@@ -95,10 +105,23 @@ const hasFormatSelection = computed(
   () => Boolean(activeItem.value?.selectedVideoFormat || activeItem.value?.selectedAudioFormat),
 );
 
+/**
+ * 标签文字：按半角宽度估算截断（汉字计 2），保证末尾一定能看到省略号；
+ * 先截断再交给 #tab 插槽，比依赖 text-overflow 在各平台更可靠。
+ * 完整标题通过 tab-props 的 title 属性悬浮查看。
+ */
 const tabLabel = (title: string): string => {
   if (!title) return t("detail.unknownVideo");
-  if (title.length > 12) return title.slice(0, 10) + "…";
-  return title;
+  const LIMIT = 24;
+  let width = 0;
+  let label = "";
+  for (const char of title) {
+    const charWidth = /[\u2e80-\u9fff\uff00-\uffef]/.test(char) ? 2 : 1;
+    if (width + charWidth > LIMIT) return `${label}…`;
+    width += charWidth;
+    label += char;
+  }
+  return label;
 };
 
 const handleTabClose = (name: string | number) => {
@@ -146,25 +169,60 @@ const handleDownload = async () => {
         type="card"
         size="small"
         closable
-        addable
         class="tabs-bar"
+        :style="tabStripStyle"
         @close="handleTabClose"
-        @add="handleTabAdd"
       >
         <template #prefix>
-          <n-button size="small" strong secondary circle @click="handleBackToHome">
-            <template #icon>
-              <n-icon><icon-mdi-arrow-left /></n-icon>
+          <n-tooltip>
+            <template #trigger>
+              <n-button
+                size="small"
+                strong
+                secondary
+                circle
+                :aria-label="$t('common.back')"
+                @click="handleBackToHome"
+              >
+                <template #icon>
+                  <n-icon><icon-mdi-arrow-left /></n-icon>
+                </template>
+              </n-button>
             </template>
-          </n-button>
+            {{ $t("common.back") }}
+          </n-tooltip>
         </template>
+
+        <template #suffix>
+          <n-tooltip>
+            <template #trigger>
+              <n-button
+                size="small"
+                strong
+                secondary
+                circle
+                :aria-label="$t('pending.goParse')"
+                @click="handleTabAdd"
+              >
+                <template #icon>
+                  <n-icon><icon-mdi-plus /></n-icon>
+                </template>
+              </n-button>
+            </template>
+            {{ $t("pending.goParse") }}
+          </n-tooltip>
+        </template>
+
         <n-tab-pane
           v-for="item in pendingStore.items"
           :key="item.id"
           :name="item.id"
-          :tab="tabLabel(item.videoInfo.title)"
+          :tab-props="{ title: tabLabel(item.videoInfo.title) }"
           display-directive="show"
-        />
+        >
+          <!-- 标签文字必须走 #tab 插槽：无子节点的 pane 会让 naive-ui 用空默认插槽覆盖 tab 属性 -->
+          <template #tab>{{ tabLabel(item.videoInfo.title) }}</template>
+        </n-tab-pane>
       </n-tabs>
 
       <div v-if="activeItem" :key="activeItem.id" class="pending-content">
@@ -314,14 +372,87 @@ const handleDownload = async () => {
 
   .tabs-bar {
     margin-bottom: 12px;
+    // card 型标签条是为“标签与内容面板连成一体”设计的，本页内容不在 pane 里，
+    // 这里把主题的分隔线色置空，一次性去掉吸附在标签条上的所有连接线。
+    // naive-ui 把这些变量写成内联样式，所以必须 !important。
+    --n-tab-border-color: transparent !important;
+
+    :deep(.n-tabs-nav) {
+      align-items: center;
+    }
+
+    // 标签底槽：挂在 inline-flex 的 tabs-wrapper 上，紧贴标签本身，
+    // 避免通栏底槽跟下方的 URL 输入框长得一样
+    :deep(.n-tabs-wrapper) {
+      align-items: center;
+      padding: 3px;
+      border-radius: 999px;
+      background-color: var(--tab-strip-slot);
+    }
+
+    // 标签间距：naive 用内联变量控制间隔元素的宽度，这里直接改元素本身
+    :deep(.n-tabs-tab-pad) {
+      width: 6px !important;
+    }
+
+    // naive-ui 的 card 型选择器深度到 5 层（.n-tabs.n-tabs--top.n-tabs--card-type .n-tabs-tab--active），
+    // 普通 :deep() 覆盖会出现“只有一半生效”（例如激活标签底边仍是透明的），
+    // 所以胶囊的形状与配色声明统一用 !important 锁住。
+    :deep(.n-tabs-tab) {
+      height: 26px !important;
+      padding: 0 12px !important;
+      align-items: center;
+      border: 1px solid var(--tab-strip-border) !important;
+      border-radius: 999px !important;
+      background-color: transparent !important;
+      transition:
+        border-color 0.16s var(--n-bezier, ease),
+        background-color 0.16s var(--n-bezier, ease);
+    }
+
+    :deep(.n-tabs-tab:not(.n-tabs-tab--active):hover) {
+      border-color: var(--tab-strip-accent-hover) !important;
+    }
+
+    :deep(.n-tabs-tab--closable) {
+      padding-inline-end: 6px !important;
+    }
+
+    :deep(.n-tabs-tab--active) {
+      // 压掉 card 型“激活标签底边透明”的规则，否则胶囊底部会开一个口
+      border-color: var(--tab-strip-accent) !important;
+      // 旧版 WebKit 不认 color-mix，上一条会保留透明底
+      background-color: transparent !important;
+      background-color: color-mix(in srgb, var(--tab-strip-accent) 20%, transparent) !important;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+    }
+
+    :deep(.n-tabs-tab__label) {
+      max-width: 200px;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    // 关闭按钮平时隐藏，悬浮或激活时才出现；隐藏时不拦截点击
+    :deep(.n-tabs-tab__close) {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.16s var(--n-bezier, ease);
+    }
+
+    :deep(.n-tabs-tab:hover .n-tabs-tab__close),
+    :deep(.n-tabs-tab--active .n-tabs-tab__close) {
+      opacity: 1;
+      pointer-events: auto;
+    }
 
     :deep(.n-tabs-nav__prefix) {
       padding-right: 8px;
     }
 
-    :deep(.n-tabs-tab) {
-      padding-left: 10px;
-      padding-right: 6px;
+    :deep(.n-tabs-nav__suffix) {
+      padding-left: 8px;
     }
   }
 
