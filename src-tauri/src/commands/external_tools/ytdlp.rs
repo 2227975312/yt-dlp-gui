@@ -1,8 +1,8 @@
 //! yt-dlp 的探测、安装和升级。
 
-use crate::utils;
 #[cfg(target_os = "windows")]
 use crate::commands::CREATE_NO_WINDOW;
+use crate::utils;
 use std::process::Stdio;
 use tauri::{AppHandle, Emitter};
 use tokio::io::AsyncBufReadExt;
@@ -101,8 +101,7 @@ pub async fn update_ytdlp(app: AppHandle) -> Result<String, String> {
     } else {
         cmd.arg("--update-to").arg(channel.as_str());
     }
-    cmd.env("PYTHONUTF8", "1")
-        .env("PYTHONIOENCODING", "utf-8");
+    cmd.env("PYTHONUTF8", "1").env("PYTHONIOENCODING", "utf-8");
     #[cfg(target_os = "windows")]
     cmd.creation_flags(CREATE_NO_WINDOW);
 

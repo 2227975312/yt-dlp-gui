@@ -11,17 +11,67 @@ export type DownloadMode = "default" | "video" | "audio";
 
 export interface CliOpenRequest {
   url: string | null;
+  /** 命令行 `--cookies` 指定的一次性 cookie 文件，仅作用于本次会话 */
   cookieFile: string | null;
   downloadDir: string | null;
 }
 
-export interface BrowserExtensionImport {
-  url: string;
-  urls?: string[];
-  mode?: HomeMode;
-  requestId: string;
-  cookieFile: string | null;
+/** Cookie profile 列表项（不含 cookie 正文） */
+export interface CookieProfileSummary {
+  id: string;
+  name: string;
+  domains: string[];
+  enabled: boolean;
+  sortOrder: number;
   cookieCount: number;
+  createdAt: number;
+  updatedAt: number;
+}
+
+/**
+ * 提交给后端的 cookie profile 内容
+ *
+ * `content` 为空表示「不更新 cookie 正文」：正文保存后不再回显，用户不重新粘贴就保留库中已有内容。
+ */
+export interface CookieProfileInput {
+  id: string | null;
+  name: string;
+  content: string | null;
+  domains: string[];
+  enabled: boolean;
+}
+
+/** 按链接匹配到的 cookie profile */
+export interface CookieMatchResult {
+  profileId: string;
+  profileName: string;
+  matchedDomain: string;
+  cookieFile: string;
+}
+
+/**
+ * 用户对 cookie 的选择意图
+ *
+ * - auto：按链接域名自动匹配
+ * - none：本次不使用 cookie
+ * - profile：强制使用指定 profile
+ */
+export interface CookieSelection {
+  mode: "auto" | "none" | "profile";
+  profileId: string | null;
+}
+
+/**
+ * 一次解析/下载实际使用的 cookie 快照
+ *
+ * 任务创建时确定并写入任务参数，避免用户在下载途中改动配置导致行为漂移。
+ */
+export interface CookieUsage {
+  mode: "auto" | "none" | "profile" | "file";
+  profileId: string | null;
+  profileName: string | null;
+  matchedDomain: string | null;
+  cookieFile: string | null;
 }
 
 export interface ToolStatus {
@@ -161,7 +211,8 @@ export interface DownloadTaskParams {
   videoFormat: string | null;
   audioFormat: string | null;
   cookieFile: string | null;
-  cookieBrowser: string | null;
+  cookieProfileId: string | null;
+  cookieProfileName: string | null;
   proxy: string | null;
   outputTemplate: string | null;
   concurrentFragments: number | null;
@@ -233,6 +284,9 @@ export interface FetchedVideoData {
 export interface PendingItem extends FetchedVideoData {
   id: string;
   createdAt: number;
+  /** 解析该项时实际使用的 cookie 及其选择意图 */
+  cookie: CookieUsage;
+  cookieSelection: CookieSelection;
   selectedPlaylistItems: number[];
   selectedVideoFormat: string;
   selectedAudioFormat: string;

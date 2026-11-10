@@ -21,7 +21,8 @@
     "saveFailed": "Save failed: {e}",
     "downloadFailed": "Download failed: {e}",
     "open": "Open",
-    "openFolder": "Open Folder"
+    "openFolder": "Open Folder",
+    "add": "Add"
   },
   "nav": {
     "home": "Home",

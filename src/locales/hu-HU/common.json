@@ -20,7 +20,8 @@
     "saveFailed": "A mentés meghiúsult: {e}",
     "downloadFailed": "A letöltés meghiúsult: {e}",
     "open": "Megnyitás",
-    "openFolder": "Mappa megnyitása"
+    "openFolder": "Mappa megnyitása",
+    "add": "Hozzáadás"
   },
   "nav": {
     "home": "Kezdőlap",

@@ -20,7 +20,8 @@
     "downloadFailed": "Échec du téléchargement : {e}",
     "copy": "Copier",
     "open": "Ouvrir",
-    "openFolder": "Ouvrir le dossier"
+    "openFolder": "Ouvrir le dossier",
+    "add": "Ajouter"
   },
   "nav": {
     "home": "Accueil",

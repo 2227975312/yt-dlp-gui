@@ -3,8 +3,8 @@ import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import { save } from "@tauri-apps/plugin-dialog";
 import { useI18n } from "vue-i18n";
 import { showErrorDialog, formatError, sanitizeFilename } from "@/utils/format";
+import { useCookieStore } from "@/stores/cookie";
 import { useSettingStore } from "@/stores/setting";
-import { useVideoStore } from "@/stores/video";
 import type {
   ChannelRecord,
   ChannelSyncProgressPayload,
@@ -68,7 +68,7 @@ const buildCsv = (items: ChannelVideoRecord[]): string => {
 export const useChannelArchive = () => {
   const { t } = useI18n();
   const settingStore = useSettingStore();
-  const videoStore = useVideoStore();
+  const cookieStore = useCookieStore();
 
   const channels = ref<ChannelRecord[]>([]);
   const channelsLoading = ref(false);
@@ -172,14 +172,13 @@ export const useChannelArchive = () => {
     if (channel) channel.syncStatus = "syncing";
 
     try {
-      const { cookieFile, cookieBrowser } = await videoStore.getCookieArgs();
+      const cookieFile = await cookieStore.resolveAutoFile(channel?.url ?? "");
       await invoke("channel_sync_start", {
         channelId: targetId,
         mode,
         tabs: syncTabs.value,
         sleepInterval: sleepInterval.value,
         cookieFile,
-        cookieBrowser,
         proxy: settingStore.proxy || null,
       });
     } catch (error: unknown) {
@@ -205,12 +204,13 @@ export const useChannelArchive = () => {
     if (!targetId) return;
 
     try {
-      const { cookieFile, cookieBrowser } = await videoStore.getCookieArgs();
+      const cookieFile = await cookieStore.resolveAutoFile(
+        channels.value.find((item) => item.id === targetId)?.url ?? "",
+      );
       const total = await invoke<number>("channel_enrich_start", {
         channelId: targetId,
         videoIds: null,
         cookieFile,
-        cookieBrowser,
         proxy: settingStore.proxy || null,
         concurrency: 6,
       });

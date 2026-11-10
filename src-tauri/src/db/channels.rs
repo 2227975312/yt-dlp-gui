@@ -241,11 +241,8 @@ pub fn delete_channel(db: &DatabaseState, channel_id: &str) -> Result<(), String
         params![channel_id],
     )
     .map_err(|e| e.to_string())?;
-    tx.execute(
-        "DELETE FROM channels WHERE id = ?1",
-        params![channel_id],
-    )
-    .map_err(|e| e.to_string())?;
+    tx.execute("DELETE FROM channels WHERE id = ?1", params![channel_id])
+        .map_err(|e| e.to_string())?;
     tx.commit().map_err(|e| e.to_string())?;
     Ok(())
 }
@@ -435,8 +432,7 @@ pub fn get_enrich_targets(
             placeholders
         );
         let mut stmt = conn.prepare(&sql).map_err(|e| e.to_string())?;
-        let mut params_vec: Vec<Box<dyn rusqlite::ToSql>> =
-            vec![Box::new(channel_id.to_string())];
+        let mut params_vec: Vec<Box<dyn rusqlite::ToSql>> = vec![Box::new(channel_id.to_string())];
         for id in &ids {
             params_vec.push(Box::new(id.to_string()));
         }
@@ -559,7 +555,8 @@ pub fn get_channel_videos_page(
 
     let count_sql = format!("SELECT COUNT(*) FROM channel_videos WHERE {}", where_str);
     let mut count_stmt = conn.prepare(&count_sql).map_err(|e| e.to_string())?;
-    let rusqlite_params: Vec<&dyn rusqlite::ToSql> = params_vec.iter().map(|b| b.as_ref()).collect();
+    let rusqlite_params: Vec<&dyn rusqlite::ToSql> =
+        params_vec.iter().map(|b| b.as_ref()).collect();
     let total: i64 = count_stmt
         .query_row(rusqlite_params.as_slice(), |row| row.get(0))
         .map_err(|e| e.to_string())?;
@@ -598,7 +595,8 @@ pub fn get_channel_videos_page(
     );
 
     let mut query_stmt = conn.prepare(&query_sql).map_err(|e| e.to_string())?;
-    let rusqlite_params: Vec<&dyn rusqlite::ToSql> = params_vec.iter().map(|b| b.as_ref()).collect();
+    let rusqlite_params: Vec<&dyn rusqlite::ToSql> =
+        params_vec.iter().map(|b| b.as_ref()).collect();
 
     let items = query_stmt
         .query_map(rusqlite_params.as_slice(), |row| {

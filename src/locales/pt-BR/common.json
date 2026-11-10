@@ -20,7 +20,8 @@
     "downloadFailed": "Falha no download: {e}",
     "copy": "Copiar",
     "open": "Abrir",
-    "openFolder": "Abrir pasta"
+    "openFolder": "Abrir pasta",
+    "add": "Adicionar"
   },
   "nav": {
     "home": "Início",

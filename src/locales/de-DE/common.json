@@ -20,7 +20,8 @@
     "downloadFailed": "Download fehlgeschlagen: {e}",
     "copy": "Kopieren",
     "open": "Öffnen",
-    "openFolder": "Ordner öffnen"
+    "openFolder": "Ordner öffnen",
+    "add": "Hinzufügen"
   },
   "nav": {
     "home": "Start",

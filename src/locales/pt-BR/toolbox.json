@@ -1,7 +1,5 @@
 {
   "toolbox": {
-    "browserExtTitle": "Extensão do navegador",
-    "browserExtDesc": "Envie URLs de vídeo e cookies do navegador para o app com um clique",
     "thumbnailTitle": "Baixar miniatura",
     "thumbnailDesc": "Extrair miniaturas de vídeo e salvar como JPG",
     "subtitlesTitle": "Baixar legendas",
@@ -113,26 +111,6 @@
     "removeSuccess": "Pacote de plugin \"{name}\" removido",
     "typeExtractor": "Extrator",
     "typePostprocessor": "Pós-processador"
-  },
-  "browserExt": {
-    "title": "Extensão do navegador",
-    "tagBeta": "Beta",
-    "intro": "Instale a extensão YDL GUI Helper em navegadores baseados em Chromium (Chrome / Edge / Brave / Vivaldi etc.) para enviar a URL da página atual e os cookies necessários a este aplicativo com um clique — especialmente útil para vídeos que exigem login ou são restritos a membros.",
-    "installHeading": "Instalação",
-    "install1": "Clique em \"Abrir pasta da extensão\" para mostrar o código instalado com o aplicativo.",
-    "install2": "Abra chrome://extensions (ou edge://extensions) e ative o \"Modo do desenvolvedor\" no canto superior direito.",
-    "install3": "Clique em \"Carregar sem compactação\" e selecione a pasta aberta pelo app que contém manifest.json.",
-    "install4": "Fixe o ícone do YDL GUI Helper ao lado da barra de endereços para acesso rápido.",
-    "usageHeading": "Como usar",
-    "usage1": "Abra uma página de vídeo suportada no navegador.",
-    "usage2": "Clique no ícone do YDL GUI ou clique com o botão direito na página / em um link e escolha \"Enviar para o YDL GUI\".",
-    "usage3": "O app aparecerá automaticamente em primeiro plano com a URL e os cookies já preenchidos na página inicial.",
-    "privacyHeading": "Privacidade",
-    "privacyNote": "Os cookies permanecem locais e são gravados pela interface de loopback 127.0.0.1. Eles não entram no link de ativação nem são enviados a servidores.",
-    "supportedHeading": "Sites suportados",
-    "openLocalFolder": "Abrir pasta da extensão",
-    "packageSaved": "Pasta aberta; selecione-a no navegador",
-    "viewSource": "Ver código-fonte no GitHub"
   },
   "channelArchive": {
     "title": "Arquivo de vídeos de canais",

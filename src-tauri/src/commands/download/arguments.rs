@@ -136,11 +136,10 @@ pub(super) fn build_download_args(
         }
     }
 
-    // Cookie 和浏览器 Cookie
+    // Cookie
     append_cookie_proxy_args(
         &mut args,
         params.cookie_file.as_deref(),
-        params.cookie_browser.as_deref(),
         None, // 代理在上方已单独处理
     );
 
@@ -347,7 +346,6 @@ mod ffmpeg_requirement_tests {
             video_format: Some("137".to_string()),
             audio_format: Some("140".to_string()),
             cookie_file: None,
-            cookie_browser: None,
             proxy: None,
             output_template: None,
             concurrent_fragments: None,

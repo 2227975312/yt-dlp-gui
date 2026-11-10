@@ -1,7 +1,5 @@
 {
   "toolbox": {
-    "browserExtTitle": "Extension de navigateur",
-    "browserExtDesc": "Envoie l'URL et les cookies du navigateur vers l'application en un clic",
     "thumbnailTitle": "Télécharger la miniature",
     "thumbnailDesc": "Extraire les miniatures vidéo et les enregistrer en JPG",
     "subtitlesTitle": "Télécharger les sous-titres",
@@ -113,26 +111,6 @@
     "removeSuccess": "Package de plugin « {name} » supprimé",
     "typeExtractor": "Extracteur",
     "typePostprocessor": "Post-processeur"
-  },
-  "browserExt": {
-    "title": "Extension de navigateur",
-    "tagBeta": "Bêta",
-    "intro": "Installez l'extension YDL GUI Helper dans un navigateur basé sur Chromium (Chrome / Edge / Brave / Vivaldi, etc.) pour envoyer l'URL de la page et les cookies nécessaires à cette application en un clic — particulièrement utile pour les vidéos nécessitant une connexion ou réservées aux abonnés.",
-    "installHeading": "Installation",
-    "install1": "Cliquez sur « Ouvrir le dossier de l’extension » pour afficher les sources installées avec l’application.",
-    "install2": "Ouvrez chrome://extensions (ou edge://extensions) et activez le « mode développeur » en haut à droite.",
-    "install3": "Cliquez sur « Charger l’extension non empaquetée » et choisissez le dossier ouvert par l’application contenant manifest.json.",
-    "install4": "Épinglez l'icône YDL GUI Helper à côté de la barre d'adresse pour un accès rapide.",
-    "usageHeading": "Utilisation",
-    "usage1": "Ouvrez une page vidéo prise en charge dans le navigateur.",
-    "usage2": "Cliquez sur l'icône YDL GUI, ou faites un clic droit sur la page ou un lien et choisissez « Envoyer vers YDL GUI ».",
-    "usage3": "Cette application passe automatiquement au premier plan, l'URL et les cookies sont pré-remplis dans l'accueil.",
-    "privacyHeading": "Vie privée",
-    "privacyNote": "Les cookies restent en local et sont écrits via l’interface de bouclage 127.0.0.1. Ils ne figurent pas dans le lien de réveil et ne sont envoyés à aucun serveur.",
-    "supportedHeading": "Sites pris en charge",
-    "openLocalFolder": "Ouvrir le dossier de l’extension",
-    "packageSaved": "Dossier ouvert ; sélectionnez-le dans le navigateur",
-    "viewSource": "Voir la source sur GitHub"
   },
   "channelArchive": {
     "title": "Archive des vidéos de chaînes",

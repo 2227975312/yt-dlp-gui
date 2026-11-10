@@ -255,11 +255,7 @@ pub(crate) fn extract_space_author(entry: &Value) -> Option<(String, String, Str
         .and_then(Value::as_str)
         .unwrap_or("")
         .to_string();
-    Some((
-        uploader.to_string(),
-        uploader.to_string(),
-        uploader_id,
-    ))
+    Some((uploader.to_string(), uploader.to_string(), uploader_id))
 }
 
 #[cfg(test)]

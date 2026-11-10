@@ -44,7 +44,6 @@ pub async fn tool_fetch_comments(
     max_comments: u32,
     sort: String,
     cookie_file: Option<String>,
-    cookie_browser: Option<String>,
     proxy: Option<String>,
 ) -> Result<Value, String> {
     let max_str = max_comments.clamp(1, MAX_COMMENTS).to_string();
@@ -66,7 +65,6 @@ pub async fn tool_fetch_comments(
             &extractor_arg,
         ],
         cookie_file.as_deref(),
-        cookie_browser.as_deref(),
         proxy.as_deref(),
     )
     .await?;

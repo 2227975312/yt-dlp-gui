@@ -21,7 +21,8 @@
     "saveFailed": "保存失败: {e}",
     "downloadFailed": "下载失败: {e}",
     "open": "打开",
-    "openFolder": "打开文件夹"
+    "openFolder": "打开文件夹",
+    "add": "添加"
   },
   "nav": {
     "home": "首页",

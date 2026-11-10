@@ -44,7 +44,10 @@ fn result_total(tool_id: &str, value: &Value) -> i64 {
             .sum();
     }
     if tool_id == "livechat" {
-        return value.as_array().map(|items| items.len() as i64).unwrap_or_default();
+        return value
+            .as_array()
+            .map(|items| items.len() as i64)
+            .unwrap_or_default();
     }
     let key = match tool_id {
         "thumbnail" => "thumbnails",
@@ -67,20 +70,12 @@ async fn run_tool(
     params: &Value,
 ) -> Result<(), String> {
     let cookie_file = optional_string(params, "cookieFile");
-    let cookie_browser = optional_string(params, "cookieBrowser");
     let proxy = optional_string(params, "proxy");
 
     let value = match tool_id {
         "livechat" => {
-            let messages = fetch_live_chat(
-                app,
-                run_id,
-                url,
-                cookie_file.as_deref(),
-                cookie_browser.as_deref(),
-                proxy.as_deref(),
-            )
-            .await?;
+            let messages =
+                fetch_live_chat(app, run_id, url, cookie_file.as_deref(), proxy.as_deref()).await?;
             serde_json::to_value(messages).map_err(|error| error.to_string())?
         }
         "thumbnail" => {
@@ -89,7 +84,6 @@ async fn run_tool(
                 run_id.to_owned(),
                 url.to_owned(),
                 cookie_file,
-                cookie_browser,
                 proxy,
             )
             .await?
@@ -100,7 +94,6 @@ async fn run_tool(
                 run_id.to_owned(),
                 url.to_owned(),
                 cookie_file,
-                cookie_browser,
                 proxy,
             )
             .await?
@@ -111,7 +104,6 @@ async fn run_tool(
                 run_id.to_owned(),
                 url.to_owned(),
                 cookie_file,
-                cookie_browser,
                 proxy,
             )
             .await?
@@ -127,7 +119,6 @@ async fn run_tool(
                     .unwrap_or(100) as u32,
                 optional_string(params, "sort").unwrap_or_else(|| "top".into()),
                 cookie_file,
-                cookie_browser,
                 proxy,
             )
             .await?
@@ -183,9 +174,7 @@ pub fn tool_get_task_state(
 
 /// 正在运行的工具 id 列表，供状态栏全局指示使用。
 #[tauri::command]
-pub fn tool_get_running_tasks(
-    state: State<'_, db::DatabaseState>,
-) -> Result<Vec<String>, String> {
+pub fn tool_get_running_tasks(state: State<'_, db::DatabaseState>) -> Result<Vec<String>, String> {
     tool_tasks::get_running_tool_ids(&state)
 }
 
@@ -241,8 +230,6 @@ pub fn tool_get_result(
 ) -> Result<Option<tool_tasks::ToolResultRecord>, String> {
     Ok(tool_tasks::get_result(&state, &tool_id)?.map(|result| result.0))
 }
-
-
 
 #[cfg(test)]
 mod tests {

@@ -1,7 +1,5 @@
 {
   "toolbox": {
-    "browserExtTitle": "浏览器扩展",
-    "browserExtDesc": "在浏览器中一键发送视频链接和 Cookie 到本应用",
     "thumbnailTitle": "下载视频封面",
     "thumbnailDesc": "提取视频封面图并保存为 JPG 格式",
     "subtitlesTitle": "下载视频字幕",
@@ -113,26 +111,6 @@
     "removeSuccess": "已移除插件包「{name}」",
     "typeExtractor": "提取器",
     "typePostprocessor": "后处理器"
-  },
-  "browserExt": {
-    "title": "浏览器扩展",
-    "tagBeta": "测试版",
-    "intro": "在 Chromium 内核浏览器（Chrome / Edge / Brave / Vivaldi 等）中安装 YDL GUI 助手扩展，可一键将当前页面链接和所需 Cookie 发送到本应用。对登录后才能观看或会员限定的视频特别有用。",
-    "installHeading": "安装",
-    "install1": "点击右上角「打开扩展目录」，显示随应用安装的扩展源码。",
-    "install2": "打开 chrome://extensions（或 edge://extensions），在右上角启用「开发者模式」。",
-    "install3": "点击「加载已解压的扩展程序」，选择应用刚才打开且包含 manifest.json 的文件夹。",
-    "install4": "将 YDL GUI 助手图标固定到地址栏旁，方便随时使用。",
-    "usageHeading": "使用",
-    "usage1": "在浏览器中打开支持的视频页面。",
-    "usage2": "点击 YDL GUI 图标，或在页面 / 视频链接上右键选择「发送到 YDL GUI」。",
-    "usage3": "本应用会自动唤起，链接和 Cookie 已自动填入首页。",
-    "privacyHeading": "隐私说明",
-    "privacyNote": "Cookie 仅在本地处理，通过 127.0.0.1 回环接口写入本应用，不会放入唤醒链接，也不会上传到任何服务器。",
-    "supportedHeading": "支持的网站",
-    "openLocalFolder": "打开扩展目录",
-    "packageSaved": "扩展目录已打开，请在浏览器中选择该目录",
-    "viewSource": "在 GitHub 查看源码"
   },
   "channelArchive": {
     "title": "频道视频归档",

@@ -177,7 +177,7 @@ watch(
       </div>
     </n-card>
 
-    <CookieCard class="section-card" />
+    <CookieProfileCard class="section-card" />
 
     <DownloadDirCard class="section-card" />
 

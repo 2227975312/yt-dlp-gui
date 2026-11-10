@@ -20,7 +20,8 @@
     "saveFailed": "Uloženie sa nepodarilo: {e}",
     "downloadFailed": "Sťahovanie sa nepodarilo: {e}",
     "open": "Otvoriť",
-    "openFolder": "Otvoriť priečinok"
+    "openFolder": "Otvoriť priečinok",
+    "add": "Pridať"
   },
   "nav": {
     "home": "Domov",

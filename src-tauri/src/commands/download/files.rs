@@ -48,9 +48,9 @@ fn belongs_to_output(candidate: &str, output_name: &str) -> bool {
     // 主干之后必须紧跟一个点，且分片产物的第一段必须为分片格式（如 .f137.mp4 / .f137）
     rest.starts_with('.') && {
         let mut parts = rest[1..].split('.');
-        parts
-            .next()
-            .is_some_and(|f| f.starts_with('f') && f.len() > 1 && f[1..].chars().all(|c| c.is_ascii_digit()))
+        parts.next().is_some_and(|f| {
+            f.starts_with('f') && f.len() > 1 && f[1..].chars().all(|c| c.is_ascii_digit())
+        })
     }
 }
 
@@ -146,7 +146,10 @@ mod tests {
     /// 回归测试：标题为前缀的其它任务不得被误伤
     #[test]
     fn does_not_match_a_longer_name_sharing_the_same_prefix() {
-        assert!(!belongs_to_output("My Video 2.f137.mp4.part", "My Video.mp4"));
+        assert!(!belongs_to_output(
+            "My Video 2.f137.mp4.part",
+            "My Video.mp4"
+        ));
         assert!(!belongs_to_output("My Video 2.mp4.part", "My Video.mp4"));
         assert!(!belongs_to_output("video-extra.mp4.part", "video.mp4"));
         // 主干之后不是合法后缀

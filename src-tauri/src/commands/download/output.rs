@@ -212,7 +212,9 @@ pub(super) fn spawn_completion_handler(
         } else if success {
             let (output_file, _) = resolve_output_file(&processes, &task_id);
             let file_size_bytes = if !output_file.is_empty() {
-                std::fs::metadata(&output_file).ok().map(|metadata| metadata.len())
+                std::fs::metadata(&output_file)
+                    .ok()
+                    .map(|metadata| metadata.len())
             } else {
                 None
             };

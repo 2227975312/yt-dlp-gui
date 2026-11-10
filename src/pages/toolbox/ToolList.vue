@@ -7,7 +7,6 @@ import IconMdiFormatListNumbered from "~icons/mdi/format-list-numbered";
 import IconMdiCommentTextMultipleOutline from "~icons/mdi/comment-text-multiple-outline";
 import IconMdiAccountBoxMultipleOutline from "~icons/mdi/account-box-multiple-outline";
 import IconMdiPuzzleOutline from "~icons/mdi/puzzle-outline";
-import IconMdiOpenInApp from "~icons/mdi/open-in-app";
 import { useI18n } from "vue-i18n";
 
 useI18n();
@@ -81,15 +80,6 @@ const tools: ToolItem[] = [
     bg: "rgba(139,92,246,0.1)",
     titleKey: "plugins.title",
     descKey: "plugins.desc",
-  },
-  {
-    key: "browser-extension",
-    icon: IconMdiOpenInApp,
-    color: "#06b6d4",
-    bg: "rgba(6,182,212,0.1)",
-    titleKey: "toolbox.browserExtTitle",
-    descKey: "toolbox.browserExtDesc",
-    tagKey: "browserExt.tagBeta",
   },
 ];
 

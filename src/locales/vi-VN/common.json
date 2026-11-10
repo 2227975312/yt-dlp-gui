@@ -20,7 +20,8 @@
     "downloadFailed": "Tải xuống thất bại: {e}",
     "copy": "Sao chép",
     "open": "Mở",
-    "openFolder": "Mở thư mục"
+    "openFolder": "Mở thư mục",
+    "add": "Thêm"
   },
   "nav": {
     "home": "Trang chủ",

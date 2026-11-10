@@ -1,9 +1,21 @@
 import { defineStore } from "pinia";
 import { useSettingStore } from "@/stores/setting";
-import type { FetchedVideoData, PendingItem, VideoFormat } from "@/types";
+import type { CookieSelection, CookieUsage, FetchedVideoData, PendingItem, VideoFormat } from "@/types";
 import { resolveDownloadMode } from "@/utils/formats";
 
 const generateId = () => `pd_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+
+/** 未使用 cookie 的空快照 */
+export const EMPTY_COOKIE_USAGE: CookieUsage = {
+  mode: "none",
+  profileId: null,
+  profileName: null,
+  matchedDomain: null,
+  cookieFile: null,
+};
+
+/** 默认跟随自动匹配 */
+export const DEFAULT_COOKIE_SELECTION: CookieSelection = { mode: "auto", profileId: null };
 
 const pickVideoFormat = (formats: VideoFormat[], maxHeight?: number): string => {
   if (!formats.length) return "";
@@ -27,9 +39,16 @@ const selectVideoFormat = (
  *
  * @param data 解析完成的视频数据
  * @param quick 是否采用快速下载预设配置
+ * @param cookie 解析时实际使用的 cookie 快照
+ * @param cookieSelection 用户对 cookie 的选择意图
  * @returns 初始化后的待下载项
  */
-export const createPendingItem = (data: FetchedVideoData, quick = false): PendingItem => {
+export const createPendingItem = (
+  data: FetchedVideoData,
+  quick = false,
+  cookie: CookieUsage = EMPTY_COOKIE_USAGE,
+  cookieSelection: CookieSelection = DEFAULT_COOKIE_SELECTION,
+): PendingItem => {
   const settingStore = useSettingStore();
   // 快速下载预设同样以“选中哪些轨道”表达：未选中的轨道直接不选格式
   const quickMode = quick ? settingStore.quickDownloadMode : "default";
@@ -43,6 +62,8 @@ export const createPendingItem = (data: FetchedVideoData, quick = false): Pendin
     ...data,
     id: generateId(),
     createdAt: Date.now(),
+    cookie,
+    cookieSelection,
     selectedPlaylistItems: data.isPlaylist ? data.playlistEntries.map((_, i) => i + 1) : [],
     selectedVideoFormat: videoFormat,
     selectedAudioFormat: audioFormat,
@@ -89,10 +110,16 @@ export const usePendingStore = defineStore("pending", () => {
    * 将解析出的视频数据加入待下载项列表，并将其激活为当前编辑项
    *
    * @param data 解析出的视频数据
+   * @param cookie 解析时实际使用的 cookie 快照
+   * @param cookieSelection 用户对 cookie 的选择意图
    * @returns 新增待下载项的唯一 ID
    */
-  const add = (data: FetchedVideoData): string => {
-    const item = createPendingItem(data);
+  const add = (
+    data: FetchedVideoData,
+    cookie: CookieUsage = EMPTY_COOKIE_USAGE,
+    cookieSelection: CookieSelection = DEFAULT_COOKIE_SELECTION,
+  ): string => {
+    const item = createPendingItem(data, false, cookie, cookieSelection);
     items.value.push(item);
     activeId.value = item.id;
     return item.id;

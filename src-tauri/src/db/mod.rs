@@ -1,6 +1,7 @@
 //! 本地 SQLite 嵌入式数据库核心管理模块。
 
 pub mod channels;
+pub mod cookies;
 pub mod history;
 pub mod schema;
 pub mod tasks;
@@ -106,6 +107,7 @@ mod tests {
             vec![
                 "channel_videos",
                 "channels",
+                "cookie_profiles",
                 "parse_history",
                 "tasks",
                 "tool_results",
@@ -131,7 +133,9 @@ mod tests {
         )
         .unwrap();
         assert_eq!(running.status, "running");
-        assert!(tool_tasks::get_result(&state, "chapters").unwrap().is_none());
+        assert!(tool_tasks::get_result(&state, "chapters")
+            .unwrap()
+            .is_none());
 
         tool_tasks::save_json_result(
             &state,
@@ -141,15 +145,10 @@ mod tests {
             0,
         )
         .unwrap();
-        let completed = tool_tasks::finish_state(
-            &state,
-            "chapters",
-            "chapters_run_1",
-            "completed",
-            None,
-        )
-        .unwrap()
-        .unwrap();
+        let completed =
+            tool_tasks::finish_state(&state, "chapters", "chapters_run_1", "completed", None)
+                .unwrap()
+                .unwrap();
         assert_eq!(completed.status, "completed");
         assert_eq!(
             tool_tasks::get_result(&state, "chapters")
@@ -209,16 +208,27 @@ mod tests {
             db_path: PathBuf::from(":memory:"),
         };
 
-        tool_tasks::start_state(&state, "chapters", "chapters_run_1", "https://example.com/a")
-            .unwrap();
-        assert!(tool_tasks::finish_state(&state, "chapters", "chapters_run_1", "cancelled", None)
-            .unwrap()
-            .is_some());
+        tool_tasks::start_state(
+            &state,
+            "chapters",
+            "chapters_run_1",
+            "https://example.com/a",
+        )
+        .unwrap();
+        assert!(
+            tool_tasks::finish_state(&state, "chapters", "chapters_run_1", "cancelled", None)
+                .unwrap()
+                .is_some()
+        );
 
         // 取消后必须能立刻开始下一个任务
-        let next =
-            tool_tasks::start_state(&state, "chapters", "chapters_run_2", "https://example.com/b")
-                .unwrap();
+        let next = tool_tasks::start_state(
+            &state,
+            "chapters",
+            "chapters_run_2",
+            "https://example.com/b",
+        )
+        .unwrap();
         assert_eq!(next.run_id, "chapters_run_2");
 
         // 旧 run 的迟到收尾不能影响新任务
@@ -245,16 +255,30 @@ mod tests {
             db_path: PathBuf::from(":memory:"),
         };
 
-        tool_tasks::start_state(&state, "comments", "comments_run_1", "https://example.com/a")
-            .unwrap();
-        let err =
-            tool_tasks::start_state(&state, "comments", "comments_run_2", "https://example.com/b")
-                .unwrap_err();
+        tool_tasks::start_state(
+            &state,
+            "comments",
+            "comments_run_1",
+            "https://example.com/a",
+        )
+        .unwrap();
+        let err = tool_tasks::start_state(
+            &state,
+            "comments",
+            "comments_run_2",
+            "https://example.com/b",
+        )
+        .unwrap_err();
         assert_eq!(err, "err_tool_already_running");
 
         // 不同工具互不阻塞
-        tool_tasks::start_state(&state, "chapters", "chapters_run_1", "https://example.com/c")
-            .unwrap();
+        tool_tasks::start_state(
+            &state,
+            "chapters",
+            "chapters_run_1",
+            "https://example.com/c",
+        )
+        .unwrap();
     }
 
     #[test]
@@ -266,8 +290,13 @@ mod tests {
             db_path: PathBuf::from(":memory:"),
         };
 
-        tool_tasks::start_state(&state, "chapters", "chapters_run_1", "https://example.com/a")
-            .unwrap();
+        tool_tasks::start_state(
+            &state,
+            "chapters",
+            "chapters_run_1",
+            "https://example.com/a",
+        )
+        .unwrap();
         assert!(
             tool_tasks::update_running_stage(&state, "chapters", "chapters_run_1", "fetching")
                 .unwrap()
@@ -295,10 +324,20 @@ mod tests {
 
         assert!(tool_tasks::get_running_tool_ids(&state).unwrap().is_empty());
 
-        tool_tasks::start_state(&state, "chapters", "chapters_run_1", "https://example.com/a")
-            .unwrap();
-        tool_tasks::start_state(&state, "livechat", "livechat_run_1", "https://example.com/b")
-            .unwrap();
+        tool_tasks::start_state(
+            &state,
+            "chapters",
+            "chapters_run_1",
+            "https://example.com/a",
+        )
+        .unwrap();
+        tool_tasks::start_state(
+            &state,
+            "livechat",
+            "livechat_run_1",
+            "https://example.com/b",
+        )
+        .unwrap();
         assert_eq!(
             tool_tasks::get_running_tool_ids(&state).unwrap(),
             vec!["chapters", "livechat"]
@@ -409,7 +448,9 @@ mod tests {
         };
 
         channels::upsert_channel(&state, &channel).unwrap();
-        let fetched = channels::get_channel(&state, "youtube:@Google").unwrap().unwrap();
+        let fetched = channels::get_channel(&state, "youtube:@Google")
+            .unwrap()
+            .unwrap();
         assert_eq!(fetched.title, "Google");
 
         let videos = vec![
@@ -469,8 +510,11 @@ mod tests {
 
         // 测试删除级联
         channels::delete_channel(&state, "youtube:@Google").unwrap();
-        assert!(channels::get_channel(&state, "youtube:@Google").unwrap().is_none());
-        let empty_ids = channels::get_channel_existing_video_ids(&state, "youtube:@Google").unwrap();
+        assert!(channels::get_channel(&state, "youtube:@Google")
+            .unwrap()
+            .is_none());
+        let empty_ids =
+            channels::get_channel_existing_video_ids(&state, "youtube:@Google").unwrap();
         assert!(empty_ids.is_empty());
     }
 
@@ -532,7 +576,9 @@ mod tests {
             .unwrap(),
             1
         );
-        assert!(channels::get_enrich_targets(&state, "ch", None).unwrap().is_empty());
+        assert!(channels::get_enrich_targets(&state, "ch", None)
+            .unwrap()
+            .is_empty());
         // 精确行即使被显式点名也不再返回：B 站等 flat 自带真日期的平台不会被重复逐条抓取
         assert!(
             channels::get_enrich_targets(&state, "ch", Some(&["v1".to_string()]))

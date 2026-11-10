@@ -11,7 +11,6 @@ pub async fn tool_fetch_chapters(
     run_id: String,
     url: String,
     cookie_file: Option<String>,
-    cookie_browser: Option<String>,
     proxy: Option<String>,
 ) -> Result<Value, String> {
     let info = support::run_ytdlp_json_tracked(
@@ -20,7 +19,6 @@ pub async fn tool_fetch_chapters(
         &url,
         &["--no-check-formats", "--no-playlist"],
         cookie_file.as_deref(),
-        cookie_browser.as_deref(),
         proxy.as_deref(),
     )
     .await?;

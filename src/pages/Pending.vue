@@ -3,16 +3,18 @@ import { formatFileSize } from "@/utils/format";
 import { estimateFileSize } from "@/utils/normalizer";
 import { findSelectedVideoFormat, resolveDownloadMode } from "@/utils/formats";
 import { useVideoStore } from "@/stores/video";
+import { useCookieStore } from "@/stores/cookie";
 import { useSettingStore } from "@/stores/setting";
 import { usePendingStore } from "@/stores/pending";
 import { useDownloadLauncher } from "@/composables/useDownloadLauncher";
 import { useI18n } from "vue-i18n";
 import { useThemeVars } from "naive-ui";
-import type { VideoInfo } from "@/types";
+import type { CookieSelection, VideoInfo } from "@/types";
 
 const { t } = useI18n();
 const router = useRouter();
 const videoStore = useVideoStore();
+const cookieStore = useCookieStore();
 const settingStore = useSettingStore();
 const pendingStore = usePendingStore();
 const { launchDownload } = useDownloadLauncher();
@@ -136,15 +138,39 @@ const handleBackToHome = () => {
   router.push({ name: "home" });
 };
 
-/** 重新获取当前项视频信息 */
+/** 当前项解析时实际使用的 cookie 说明 */
+const activeCookieName = computed(() => {
+  const cookie = activeItem.value?.cookie;
+  if (!cookie || cookie.mode === "none") return t("cookie.notUsed");
+  if (cookie.mode === "file") return t("cookie.resolvedCli");
+  if (cookie.mode === "auto" && cookie.matchedDomain) {
+    return t("cookie.resolvedAuto", {
+      name: cookie.profileName ?? "",
+      domain: cookie.matchedDomain,
+    });
+  }
+  return t("cookie.resolved", { name: cookie.profileName ?? "" });
+});
+
+/** 重新获取当前项视频信息（使用当前选择的 cookie 配置） */
 const handleRefresh = async () => {
   const item = activeItem.value;
   if (!item) return;
-  const data = await videoStore.fetchVideoInfo(item.url);
+  const cookie = await cookieStore.resolve(item.url, item.cookieSelection);
+  item.cookie = cookie;
+  const data = await videoStore.fetchVideoInfo(item.url, { cookieFile: cookie.cookieFile });
   if (data) {
     pendingStore.refresh(item.id, data);
     window.$message.success(t("detail.refreshSuccess"));
   }
+};
+
+/** 切换 cookie 配置后立即用新配置重新解析 */
+const handleCookieSelectionChange = async (selection: CookieSelection): Promise<void> => {
+  const item = activeItem.value;
+  if (!item) return;
+  item.cookieSelection = selection;
+  await handleRefresh();
 };
 
 /** 开始下载当前项 */
@@ -248,6 +274,15 @@ const handleDownload = async () => {
             </template>
           </n-button>
         </n-flex>
+
+        <CookieSelector
+          :url="activeItem.url"
+          :selection="activeItem.cookieSelection"
+          :usage-name="activeCookieName"
+          :disabled="videoStore.fetching"
+          class="section-card"
+          @update:selection="handleCookieSelectionChange"
+        />
 
         <VideoInfoCard
           :video-info="activeItem.videoInfo as VideoInfo"

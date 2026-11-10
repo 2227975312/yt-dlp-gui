@@ -52,11 +52,11 @@ pub fn get_ytdlp_download_url_for_channel(channel: &str) -> Result<String, Strin
 /// 获取当前所选通道的 yt-dlp 下载地址（根据平台）。
 pub fn get_ytdlp_download_url() -> String {
     get_ytdlp_download_url_for_channel(get_ytdlp_channel().as_str()).unwrap_or_else(|_| {
-            format!(
-                "https://github.com/yt-dlp/yt-dlp/releases/latest/download/{}",
-                ytdlp_asset_name()
-            )
-        })
+        format!(
+            "https://github.com/yt-dlp/yt-dlp/releases/latest/download/{}",
+            ytdlp_asset_name()
+        )
+    })
 }
 
 /// 获取 Deno 下载地址（根据平台和架构）

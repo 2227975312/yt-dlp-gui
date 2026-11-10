@@ -13,7 +13,6 @@ pub async fn tool_fetch_thumbnails(
     run_id: String,
     url: String,
     cookie_file: Option<String>,
-    cookie_browser: Option<String>,
     proxy: Option<String>,
 ) -> Result<Value, String> {
     support::run_ytdlp_json_tracked(
@@ -22,7 +21,6 @@ pub async fn tool_fetch_thumbnails(
         &url,
         &["--no-check-formats", "--no-playlist"],
         cookie_file.as_deref(),
-        cookie_browser.as_deref(),
         proxy.as_deref(),
     )
     .await
@@ -72,7 +70,6 @@ pub async fn tool_download_thumbnail(
     url: String,
     download_dir: String,
     cookie_file: Option<String>,
-    cookie_browser: Option<String>,
     proxy: Option<String>,
 ) -> Result<String, String> {
     run_ytdlp_tool(
@@ -86,7 +83,6 @@ pub async fn tool_download_thumbnail(
             "jpg".to_string(),
         ],
         cookie_file.as_deref(),
-        cookie_browser.as_deref(),
         proxy.as_deref(),
     )
     .await

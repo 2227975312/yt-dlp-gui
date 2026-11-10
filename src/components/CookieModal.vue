@@ -8,13 +8,9 @@ const statusStore = useStatusStore();
   <n-modal
     v-model:show="statusStore.showCookieModal"
     preset="card"
-    :auto-focus="false"
     :title="$t('cookie.settings')"
-    size="small"
-    :bordered="false"
-    content-scrollable
-    :style="{ width: '480px', maxHeight: '80vh' }"
+    style="width: min(760px, 92vw)"
   >
-    <CookieCard plain />
+    <CookieProfileCard plain />
   </n-modal>
 </template>

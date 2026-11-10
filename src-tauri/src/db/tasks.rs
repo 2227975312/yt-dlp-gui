@@ -95,7 +95,10 @@ pub fn get_all_tasks(conn: &Connection) -> Result<Vec<DownloadTaskRecord>, rusql
     Ok(tasks)
 }
 
-pub fn upsert_task_internal(conn: &Connection, task: &DownloadTaskRecord) -> Result<(), rusqlite::Error> {
+pub fn upsert_task_internal(
+    conn: &Connection,
+    task: &DownloadTaskRecord,
+) -> Result<(), rusqlite::Error> {
     let logs_json = serde_json::to_string(&task.logs).unwrap_or_else(|_| "[]".to_string());
     let params_json = serde_json::to_string(&task.params).unwrap_or_else(|_| "{}".to_string());
 

@@ -2,17 +2,24 @@
 import { readText } from "@tauri-apps/plugin-clipboard-manager";
 import { isValidUrl } from "@/utils/validate";
 import { useVideoStore } from "@/stores/video";
-import { createPendingItem, usePendingStore } from "@/stores/pending";
+import { useCookieStore } from "@/stores/cookie";
+import {
+  DEFAULT_COOKIE_SELECTION,
+  EMPTY_COOKIE_USAGE,
+  createPendingItem,
+  usePendingStore,
+} from "@/stores/pending";
 import { useHistoryStore } from "@/stores/history";
 import { useSettingStore } from "@/stores/setting";
 import { useDownloadLauncher } from "@/composables/useDownloadLauncher";
 import { useI18n } from "vue-i18n";
-import type { FetchedVideoData, HomeMode } from "@/types";
+import type { CookieSelection, CookieUsage, FetchedVideoData, HomeMode } from "@/types";
 
 const { t: translate, tm: translateMessage } = useI18n();
 const router = useRouter();
 const route = useRoute();
 const videoStore = useVideoStore();
+const cookieStore = useCookieStore();
 const pendingStore = usePendingStore();
 const historyStore = useHistoryStore();
 const settingStore = useSettingStore();
@@ -23,6 +30,9 @@ const batchInput = ref("");
 const batchParsing = ref(false);
 const showQuickSettings = ref(false);
 const BATCH_LIMIT = 50;
+
+/** 首页的 cookie 选择意图，同时作用于解析与随后创建的待下载/下载任务 */
+const cookieSelection = ref<CookieSelection>({ ...DEFAULT_COOKIE_SELECTION });
 
 /**
  * 从多行或空格分隔的文本中提取并去重有效网址
@@ -53,7 +63,7 @@ const showHistory = ref(false);
  */
 const handleKeydown = (keyboardEvent: KeyboardEvent): void => {
   if (keyboardEvent.key === "Enter") {
-    handleSearch();
+    void runSearch();
     return;
   }
 
@@ -190,6 +200,10 @@ const applyExternalImport = (routeQuery: Record<string, unknown>): void => {
 
   if (importedUrls.length === 0) return;
 
+  // 命令行 `--cookies` 只作用于本次导入的解析，也不写入任何配置
+  const cliCookieFile = cookieStore.takeCliOverride();
+  if (cliCookieFile) pendingCliCookieFile.value = cliCookieFile;
+
   router.replace({ name: "home", query: {} });
 
   const effectiveMode: HomeMode =
@@ -205,7 +219,7 @@ const applyExternalImport = (routeQuery: Record<string, unknown>): void => {
     settingStore.homeMode = "standard";
     url.value = importedUrls[0];
     historyIndex.value = -1;
-    handleSearch();
+    void runSearch();
   }
 };
 
@@ -237,19 +251,24 @@ onUnmounted(() => {
  * 处理视频解析成功后的数据分发（加入待下载列表或发起快速下载任务）
  *
  * @param videoData 解析成功的视频详细元数据
+ * @param cookie 本次解析实际使用的 cookie 快照
  * @param preparingTaskId 提前占位的准备中任务 ID（可选）
  * @returns Promise<boolean> 是否成功提交处理
  */
 const handleParsedData = async (
   videoData: FetchedVideoData,
+  cookie: CookieUsage,
   preparingTaskId?: string,
 ): Promise<boolean> => {
   if (settingStore.homeDownloadBehavior === "pending") {
-    pendingStore.add(videoData);
+    pendingStore.add(videoData, cookie, cookieSelection.value);
     return true;
   }
 
-  const downloadResult = await launchDownload(createPendingItem(videoData, true), preparingTaskId);
+  const downloadResult = await launchDownload(
+    createPendingItem(videoData, true, cookie, cookieSelection.value),
+    preparingTaskId,
+  );
   return downloadResult === "started" || downloadResult === "queued";
 };
 
@@ -265,12 +284,39 @@ const ensureQuickDownloadConfigured = (): boolean => {
   return false;
 };
 
+/** 命令行 `--cookies` 给本次导入预留的一次性 cookie 文件，被下一次解析消费后清空 */
+const pendingCliCookieFile = ref<string | null>(null);
+
+const consumeCliCookieFile = (): string | null => {
+  const file = pendingCliCookieFile.value;
+  pendingCliCookieFile.value = null;
+  return file;
+};
+
+/**
+ * 解析本次要使用的 cookie 快照
+ *
+ * 命令行指定的一次性文件优先，其余情况按当前选择意图（自动匹配/不使用/指定 profile）解析。
+ */
+const resolveCookie = async (
+  targetUrl: string,
+  overrideFile: string | null,
+): Promise<CookieUsage> => {
+  if (overrideFile) return cookieStore.resolveWithFile(overrideFile);
+  try {
+    return await cookieStore.resolve(targetUrl, cookieSelection.value);
+  } catch (error: unknown) {
+    window.$message.warning(String(error));
+    return { ...EMPTY_COOKIE_USAGE };
+  }
+};
+
 /**
  * 执行标准模式下的单条视频链接解析与下载提交流程
  *
  * @returns Promise<void>
  */
-const handleSearch = async (): Promise<void> => {
+const runSearch = async (): Promise<void> => {
   const trimmedUrl = url.value.trim();
   if (!trimmedUrl) return;
   if (!isValidUrl(trimmedUrl)) {
@@ -278,15 +324,16 @@ const handleSearch = async (): Promise<void> => {
     return;
   }
   if (!ensureQuickDownloadConfigured()) return;
+  const cookie = await resolveCookie(trimmedUrl, consumeCliCookieFile());
   const preparingTaskId =
     settingStore.homeDownloadBehavior === "quick"
-      ? await createPreparingTask(trimmedUrl)
+      ? await createPreparingTask(trimmedUrl, cookie)
       : undefined;
   if (preparingTaskId) await router.push({ name: "downloads" });
-  const fetchedData = await videoStore.fetchVideoInfo(trimmedUrl);
+  const fetchedData = await videoStore.fetchVideoInfo(trimmedUrl, { cookieFile: cookie.cookieFile });
   if (fetchedData) {
     historyStore.add(trimmedUrl, fetchedData.videoInfo.title);
-    const hasSubmitted = await handleParsedData(fetchedData, preparingTaskId);
+    const hasSubmitted = await handleParsedData(fetchedData, cookie, preparingTaskId);
     if (hasSubmitted && settingStore.homeDownloadBehavior === "pending") {
       router.push({ name: "pending" });
     }
@@ -298,9 +345,11 @@ const handleSearch = async (): Promise<void> => {
 /**
  * 批量解析去重后的链接列表（逐项顺序解析以防瞬时占用过多系统进程）
  *
+ * 每条链接各自按域名匹配 cookie，保持批量导入时与单条解析一致的语义。
+ *
  * @returns Promise<void>
  */
-const handleBatchSearch = async (): Promise<void> => {
+const runBatchSearch = async (): Promise<void> => {
   const targetUrls = batchUrls.value;
   if (targetUrls.length === 0) {
     window.$message.warning(translate("home.batchEmpty"));
@@ -312,22 +361,30 @@ const handleBatchSearch = async (): Promise<void> => {
   }
   if (!ensureQuickDownloadConfigured()) return;
 
+  const cliCookieFile = consumeCliCookieFile();
   batchParsing.value = true;
   let succeededCount = 0;
+  const cookieUsages = new Map<string, CookieUsage>();
   const preparingTasks = new Map<string, string>();
-  if (settingStore.homeDownloadBehavior === "quick") {
-    for (const targetUrl of targetUrls) {
-      preparingTasks.set(targetUrl, await createPreparingTask(targetUrl));
-    }
-  }
-  if (preparingTasks.size > 0) await router.push({ name: "downloads" });
-
   try {
     for (const targetUrl of targetUrls) {
-      const fetchedData = await videoStore.fetchVideoInfo(targetUrl, { silent: true });
+      const cookie = await resolveCookie(targetUrl, cliCookieFile);
+      cookieUsages.set(targetUrl, cookie);
+      if (settingStore.homeDownloadBehavior === "quick") {
+        preparingTasks.set(targetUrl, await createPreparingTask(targetUrl, cookie));
+      }
+    }
+    if (preparingTasks.size > 0) await router.push({ name: "downloads" });
+
+    for (const targetUrl of targetUrls) {
+      const cookie = cookieUsages.get(targetUrl) ?? { ...EMPTY_COOKIE_USAGE };
+      const fetchedData = await videoStore.fetchVideoInfo(targetUrl, {
+        silent: true,
+        cookieFile: cookie.cookieFile,
+      });
       if (fetchedData) {
         historyStore.add(targetUrl, fetchedData.videoInfo.title);
-        if (await handleParsedData(fetchedData, preparingTasks.get(targetUrl))) {
+        if (await handleParsedData(fetchedData, cookie, preparingTasks.get(targetUrl))) {
           succeededCount += 1;
         }
       } else {
@@ -419,7 +476,7 @@ const handleBatchSearch = async (): Promise<void> => {
                 round
                 :loading="videoStore.fetching"
                 :disabled="!url.trim() || isBusy"
-                @click="handleSearch"
+                @click="runSearch"
               >
                 <template #icon>
                   <n-icon>
@@ -443,7 +500,7 @@ const handleBatchSearch = async (): Promise<void> => {
               :placeholder="$t('home.batchPlaceholder')"
               :autosize="{ minRows: 3, maxRows: 3 }"
               :disabled="isBusy"
-              @keydown.ctrl.enter.prevent="handleBatchSearch"
+              @keydown.ctrl.enter.prevent="runBatchSearch"
             />
 
             <div class="submit-row">
@@ -461,7 +518,7 @@ const handleBatchSearch = async (): Promise<void> => {
                 round
                 :loading="batchParsing"
                 :disabled="batchUrls.length === 0 || isBusy"
-                @click="handleBatchSearch"
+                @click="runBatchSearch"
               >
                 <template #icon>
                   <n-icon>
@@ -479,6 +536,12 @@ const handleBatchSearch = async (): Promise<void> => {
           </div>
         </Transition>
       </div>
+      <CookieSelector
+        v-model:selection="cookieSelection"
+        :url="settingStore.homeMode === 'standard' ? url : batchUrls[0] || ''"
+        :disabled="isBusy"
+        class="cookie-row"
+      />
       <n-flex :size="8" justify="center">
         <n-button size="small" strong secondary round @click="handlePaste">
           <template #icon>
@@ -603,6 +666,12 @@ const handleBatchSearch = async (): Promise<void> => {
     width: 100%;
     max-width: 500px;
   }
+}
+
+/* 与输入框同宽对齐，保证「匹配到的 Cookie 配置」一行不跳出输入区域 */
+.cookie-row {
+  width: 100%;
+  max-width: 500px;
 }
 
 .input-stage {

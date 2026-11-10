@@ -20,7 +20,8 @@
     "downloadFailed": "فشل التنزيل: {e}",
     "copy": "نسخ",
     "open": "فتح",
-    "openFolder": "فتح المجلد"
+    "openFolder": "فتح المجلد",
+    "add": "إضافة"
   },
   "nav": {
     "home": "الرئيسية",

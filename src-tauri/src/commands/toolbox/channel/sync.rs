@@ -52,7 +52,6 @@ pub async fn channel_add(
     app: AppHandle,
     url: String,
     cookie_file: Option<String>,
-    cookie_browser: Option<String>,
     proxy: Option<String>,
 ) -> Result<ChannelRecord, String> {
     let raw_url = url.trim();
@@ -69,7 +68,6 @@ pub async fn channel_add(
         &cleaned_url,
         &["--no-check-formats", "--playlist-items", "0"],
         cookie_file.as_deref(),
-        cookie_browser.as_deref(),
         proxy.as_deref(),
     )
     .await
@@ -83,7 +81,6 @@ pub async fn channel_add(
                 &cleaned_url,
                 &["--no-check-formats", "--playlist-end", "1"],
                 cookie_file.as_deref(),
-                cookie_browser.as_deref(),
                 proxy.as_deref(),
             )
             .await?
@@ -121,7 +118,6 @@ pub async fn channel_add(
             &cleaned_url,
             &meta_args,
             cookie_file.as_deref(),
-            cookie_browser.as_deref(),
             proxy.as_deref(),
         )
         .await
@@ -131,8 +127,7 @@ pub async fn channel_add(
                 .and_then(Value::as_array)
                 .and_then(|entries| entries.first());
             if let Some(entry) = first {
-                if let Some((space_title, space_uploader, space_uid)) =
-                    extract_space_author(entry)
+                if let Some((space_title, space_uploader, space_uid)) = extract_space_author(entry)
                 {
                     title = space_title;
                     uploader = space_uploader;
@@ -265,7 +260,6 @@ pub async fn channel_sync_start(
     tabs: Option<Vec<String>>,
     sleep_interval: Option<f64>,
     cookie_file: Option<String>,
-    cookie_browser: Option<String>,
     proxy: Option<String>,
 ) -> Result<(), String> {
     let db = app.state::<DatabaseState>();
@@ -391,12 +385,7 @@ pub async fn channel_sync_start(
                 args.push("--user-agent".to_string());
                 args.push(BILIBILI_USER_AGENT.to_string());
             }
-            append_cookie_proxy_args(
-                &mut args,
-                cookie_file.as_deref(),
-                cookie_browser.as_deref(),
-                proxy.as_deref(),
-            );
+            append_cookie_proxy_args(&mut args, cookie_file.as_deref(), proxy.as_deref());
             args.push(target_url.clone());
 
             let mut cmd = tokio::process::Command::new(&ytdlp_path);
@@ -485,13 +474,13 @@ pub async fn channel_sync_start(
                     //   有值即视为 exact，只有缺失才需要后续校准。
                     //   这样 B 站等平台不会被重复逐条抓取。
                     let published_at = extract_published_at(&entry);
-                    let published_accuracy = if channel.platform == "youtube" || published_at.is_none()
-                    {
-                        "approx"
-                    } else {
-                        "exact"
-                    }
-                    .to_string();
+                    let published_accuracy =
+                        if channel.platform == "youtube" || published_at.is_none() {
+                            "approx"
+                        } else {
+                            "exact"
+                        }
+                        .to_string();
 
                     let content_type = if tab_name == "shorts" || video_url.contains("/shorts/") {
                         "short".to_string()
@@ -546,7 +535,8 @@ pub async fn channel_sync_start(
                         created_at: now_ms,
                     });
 
-                    let should_emit = batch.len() >= 15 || (now_ms - last_emit_ms >= 300 && !batch.is_empty());
+                    let should_emit =
+                        batch.len() >= 15 || (now_ms - last_emit_ms >= 300 && !batch.is_empty());
                     if should_emit {
                         let _ = upsert_channel_videos_batch(&db_state, &batch);
                         batch.clear();
@@ -634,8 +624,11 @@ pub async fn channel_sync_start(
             // 增量同步只校准本轮新增（便宜）；全量同步校准全频道未精确的行，
             // 存量数据的精确化就靠点一次全量同步完成，无需额外手动入口。
             if !is_incremental || !new_video_ids.is_empty() {
-                let auto_ids: Option<&[String]> =
-                    if is_incremental { Some(&new_video_ids) } else { None };
+                let auto_ids: Option<&[String]> = if is_incremental {
+                    Some(&new_video_ids)
+                } else {
+                    None
+                };
                 // 已有校准任务在跑等情况：静默跳过，不打断同步完成态
                 let _ = spawn_enrich_job(
                     &app_handle,
@@ -644,7 +637,6 @@ pub async fn channel_sync_start(
                         channel_platform: channel.platform.as_str(),
                         video_ids: auto_ids,
                         cookie_file,
-                        cookie_browser,
                         proxy,
                         concurrency: Some(6),
                     },

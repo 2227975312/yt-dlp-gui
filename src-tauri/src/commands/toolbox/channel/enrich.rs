@@ -137,7 +137,6 @@ struct EnrichWorkerCtx {
     channel_id: String,
     channel_platform: String,
     cookie_file: Option<String>,
-    cookie_browser: Option<String>,
     proxy: Option<String>,
 }
 
@@ -156,7 +155,6 @@ async fn enrich_worker(ctx: EnrichWorkerCtx) {
         channel_id,
         channel_platform,
         cookie_file,
-        cookie_browser,
         proxy,
     } = ctx;
     // 非 YouTube 站点没有 player_client 概念，用通用参数回退（仍比重抓整个同步快，
@@ -189,12 +187,7 @@ async fn enrich_worker(ctx: EnrichWorkerCtx) {
             }
             generic
         };
-        append_cookie_proxy_args(
-            &mut args,
-            cookie_file.as_deref(),
-            cookie_browser.as_deref(),
-            proxy.as_deref(),
-        );
+        append_cookie_proxy_args(&mut args, cookie_file.as_deref(), proxy.as_deref());
 
         let mut cmd = tokio::process::Command::new(&ytdlp_path);
         cmd.args(&args)
@@ -372,7 +365,6 @@ pub(crate) struct EnrichJobParams<'a> {
     pub channel_platform: &'a str,
     pub video_ids: Option<&'a [String]>,
     pub cookie_file: Option<String>,
-    pub cookie_browser: Option<String>,
     pub proxy: Option<String>,
     pub concurrency: Option<usize>,
 }
@@ -387,7 +379,6 @@ pub(crate) fn spawn_enrich_job(app: &AppHandle, params: EnrichJobParams) -> Resu
         channel_platform,
         video_ids,
         cookie_file,
-        cookie_browser,
         proxy,
         concurrency,
     } = params;
@@ -456,11 +447,7 @@ pub(crate) fn spawn_enrich_job(app: &AppHandle, params: EnrichJobParams) -> Resu
         let has_cookie = cookie_file
             .as_deref()
             .map(|s| !s.trim().is_empty())
-            .unwrap_or(false)
-            || cookie_browser
-                .as_deref()
-                .map(|s| !s.trim().is_empty())
-                .unwrap_or(false);
+            .unwrap_or(false);
 
         if channel_platform == "youtube" || channel_platform == "bilibili" {
             let fast_inputs: Vec<(String, String, String)> = targets
@@ -617,7 +604,6 @@ pub(crate) fn spawn_enrich_job(app: &AppHandle, params: EnrichJobParams) -> Resu
                     channel_id: channel_id.clone(),
                     channel_platform: channel_platform.clone(),
                     cookie_file: cookie_file.clone(),
-                    cookie_browser: cookie_browser.clone(),
                     proxy: proxy.clone(),
                 })));
             }
@@ -721,7 +707,6 @@ pub async fn channel_enrich_start(
     channel_id: String,
     video_ids: Option<Vec<String>>,
     cookie_file: Option<String>,
-    cookie_browser: Option<String>,
     proxy: Option<String>,
     concurrency: Option<usize>,
 ) -> Result<usize, String> {
@@ -735,7 +720,6 @@ pub async fn channel_enrich_start(
             channel_platform: channel.platform.as_str(),
             video_ids: video_ids.as_deref(),
             cookie_file,
-            cookie_browser,
             proxy,
             concurrency,
         },

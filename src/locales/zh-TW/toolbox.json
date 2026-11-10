@@ -1,7 +1,5 @@
 {
   "toolbox": {
-    "browserExtTitle": "瀏覽器擴充功能",
-    "browserExtDesc": "在瀏覽器中一鍵將影片連結與 Cookie 發送到本應用程式",
     "thumbnailTitle": "下載影片封面",
     "thumbnailDesc": "擷取影片封面圖並儲存為 JPG 格式",
     "subtitlesTitle": "下載影片字幕",
@@ -113,26 +111,6 @@
     "removeSuccess": "已移除外掛套件「{name}」",
     "typeExtractor": "擷取器",
     "typePostprocessor": "後處理器"
-  },
-  "browserExt": {
-    "title": "瀏覽器擴充功能",
-    "tagBeta": "測試版",
-    "intro": "在 Chromium 核心瀏覽器（Chrome / Edge / Brave / Vivaldi 等）安裝 YDL GUI 助手擴充功能，即可一鍵將目前頁面連結與所需 Cookie 發送到本應用程式。對需要登入或會員限定的影片特別好用。",
-    "installHeading": "安裝",
-    "install1": "點擊右上角「開啟擴充功能目錄」，顯示隨應用程式安裝的擴充功能原始碼。",
-    "install2": "開啟 chrome://extensions（或 edge://extensions），在右上角啟用「開發人員模式」。",
-    "install3": "點擊「載入未封裝項目」，選擇應用程式剛開啟且包含 manifest.json 的資料夾。",
-    "install4": "將 YDL GUI 助手圖示固定在網址列旁，方便隨時呼叫。",
-    "usageHeading": "使用",
-    "usage1": "在瀏覽器開啟支援的影片頁面。",
-    "usage2": "點擊 YDL GUI 圖示，或在頁面／影片連結上按右鍵並選擇「傳送到 YDL GUI」。",
-    "usage3": "本應用程式會自動喚起，連結與 Cookie 已自動填入首頁。",
-    "privacyHeading": "隱私",
-    "privacyNote": "Cookie 僅在本機處理，透過 127.0.0.1 回環介面寫入本應用程式，不會放入喚醒連結或上傳至伺服器。",
-    "supportedHeading": "支援的網站",
-    "openLocalFolder": "開啟擴充功能目錄",
-    "packageSaved": "擴充功能目錄已開啟，請在瀏覽器中選擇該目錄",
-    "viewSource": "在 GitHub 查看原始碼"
   },
   "channelArchive": {
     "title": "頻道影片歸檔",

@@ -9,8 +9,7 @@ import { findSelectedVideoFormat, hasAudioStream, resolveDownloadMode } from "@/
 import { useDownloadStore } from "@/stores/download";
 import { useSettingStore } from "@/stores/setting";
 import { useStatusStore } from "@/stores/status";
-import { useVideoStore } from "@/stores/video";
-import type { DownloadTask, FfmpegStatus, PendingItem } from "@/types";
+import type { CookieUsage, DownloadTask, FfmpegStatus, PendingItem } from "@/types";
 
 export type DownloadLaunchResult =
   | "started"
@@ -36,7 +35,6 @@ export const useDownloadLauncher = () => {
   const { t } = useI18n();
   const settingStore = useSettingStore();
   const downloadStore = useDownloadStore();
-  const videoStore = useVideoStore();
   const statusStore = useStatusStore();
 
   const buildFormatLabel = (item: PendingItem): string => {
@@ -66,7 +64,7 @@ export const useDownloadLauncher = () => {
     return parts.join(" ") || t("detail.defaultQuality");
   };
 
-  const createPreparingTask = async (url: string): Promise<string> => {
+  const createPreparingTask = async (url: string, cookie: CookieUsage): Promise<string> => {
     const taskId = `prepare_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
     await downloadStore.addTask({
       id: taskId,
@@ -88,8 +86,9 @@ export const useDownloadLauncher = () => {
         downloadMode: settingStore.quickDownloadMode,
         videoFormat: null,
         audioFormat: null,
-        cookieFile: null,
-        cookieBrowser: null,
+        cookieFile: cookie.cookieFile,
+        cookieProfileId: cookie.profileId,
+        cookieProfileName: cookie.profileName,
         proxy: settingStore.proxy || null,
         outputTemplate: null,
         concurrentFragments: null,
@@ -160,7 +159,7 @@ export const useDownloadLauncher = () => {
     }
 
     const taskId = `dl_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-    const { cookieFile, cookieBrowser } = await videoStore.getCookieArgs();
+    const cookieFile = item.cookie.cookieFile;
     const outputTemplate = composeOutputTemplate(
       settingStore.outputTemplate,
       settingStore.filenamePrefix,
@@ -182,7 +181,8 @@ export const useDownloadLauncher = () => {
       videoFormat: item.selectedVideoFormat || null,
       audioFormat: item.selectedAudioFormat || null,
       cookieFile,
-      cookieBrowser,
+      cookieProfileId: item.cookie.profileId,
+      cookieProfileName: item.cookie.profileName,
       proxy: settingStore.proxy || null,
       outputTemplate,
       concurrentFragments: settingStore.concurrentFragments || null,

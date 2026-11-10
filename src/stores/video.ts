@@ -36,48 +36,24 @@ export const useVideoStore = defineStore("video", () => {
   const fetching = ref(false);
 
   /**
-   * 根据当前全局设置解析并获取有效的 Cookie 传入参数
-   *
-   * @returns 包含 cookieFile 或 cookieBrowser 的参数对象
-   */
-  const getCookieArgs = async (): Promise<{
-    cookieFile: string | null;
-    cookieBrowser: string | null;
-  }> => {
-    const settingStore = useSettingStore();
-    const { cookieMode, cookieText, cookieFile, cookieBrowser } = settingStore;
-    if (cookieMode === "text" && cookieText.trim()) {
-      const path = await invoke<string>("save_cookie_text", { text: cookieText });
-      return { cookieFile: path, cookieBrowser: null };
-    }
-    if (cookieMode === "file" && cookieFile) {
-      return { cookieFile, cookieBrowser: null };
-    }
-    if (cookieMode === "browser" && cookieBrowser) {
-      return { cookieFile: null, cookieBrowser };
-    }
-    return { cookieFile: null, cookieBrowser: null };
-  };
-
-  /**
    * 解析指定 URL 的视频或播放列表元数据
    *
+   * Cookie 由调用方（首页/待下载页/工具箱）先通过 cookieStore 解析成快照后传入。
+   *
    * @param targetUrl 待解析的视频或播放列表地址
-   * @param options 可选配置（如 silent 静默模式，不弹出错误通知框）
+   * @param options 可选配置（silent 静默模式、cookieFile 本次使用的 cookie 文件）
    * @returns 解析成功返回标准化视频数据对象，失败则返回 null
    */
   const fetchVideoInfo = async (
     targetUrl: string,
-    options: { silent?: boolean } = {},
+    options: { silent?: boolean; cookieFile?: string | null } = {},
   ): Promise<FetchedVideoData | null> => {
     const settingStore = useSettingStore();
     fetching.value = true;
     try {
-      const { cookieFile, cookieBrowser } = await getCookieArgs();
       const info = await invoke<VideoInfo>("fetch_video_info", {
         url: targetUrl,
-        cookieFile,
-        cookieBrowser,
+        cookieFile: options.cookieFile ?? null,
         proxy: settingStore.proxy || null,
       });
       let videoInfo: VideoInfo;
@@ -169,6 +145,5 @@ export const useVideoStore = defineStore("video", () => {
   return {
     fetching,
     fetchVideoInfo,
-    getCookieArgs,
   };
 });

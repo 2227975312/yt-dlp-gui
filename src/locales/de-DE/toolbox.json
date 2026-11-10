@@ -1,7 +1,5 @@
 {
   "toolbox": {
-    "browserExtTitle": "Browser-Erweiterung",
-    "browserExtDesc": "Video-URL & Cookies aus dem Browser per Klick an die App senden",
     "thumbnailTitle": "Vorschaubild herunterladen",
     "thumbnailDesc": "Video-Vorschaubilder extrahieren und als JPG speichern",
     "subtitlesTitle": "Untertitel herunterladen",
@@ -113,26 +111,6 @@
     "removeSuccess": "Plugin-Paket „{name}“ entfernt",
     "typeExtractor": "Extractor",
     "typePostprocessor": "Postprozessor"
-  },
-  "browserExt": {
-    "title": "Browser-Erweiterung",
-    "tagBeta": "Beta",
-    "intro": "Installiere die YDL GUI Helper-Erweiterung in einem Chromium-basierten Browser (Chrome / Edge / Brave / Vivaldi usw.), um die URL der aktuellen Seite und benötigte Cookies mit einem Klick an diese App zu senden — besonders nützlich für Videos, die einen Login erfordern oder nur Mitgliedern vorbehalten sind.",
-    "installHeading": "Installation",
-    "install1": "Oben rechts „Erweiterungsordner öffnen“ wählen, um den mitinstallierten Quellordner anzuzeigen.",
-    "install2": "Öffne chrome://extensions (oder edge://extensions) und aktiviere oben rechts den „Entwicklermodus“.",
-    "install3": "„Entpackte Erweiterung laden“ wählen und den von der App geöffneten Ordner mit manifest.json auswählen.",
-    "install4": "Befestige das YDL GUI Helper-Icon neben der Adressleiste für schnellen Zugriff.",
-    "usageHeading": "Nutzung",
-    "usage1": "Öffne eine unterstützte Videoseite im Browser.",
-    "usage2": "Klicke auf das YDL GUI-Icon oder rechtsklicke auf die Seite bzw. einen Videolink und wähle „An YDL GUI senden“.",
-    "usage3": "Diese App wird automatisch in den Vordergrund gebracht; URL und Cookies sind auf der Startseite bereits ausgefüllt.",
-    "privacyHeading": "Datenschutz",
-    "privacyNote": "Cookies bleiben lokal und werden über die 127.0.0.1-Loopback-Schnittstelle geschrieben. Sie gelangen weder in den Aufweck-Link noch auf einen Server.",
-    "supportedHeading": "Unterstützte Seiten",
-    "openLocalFolder": "Erweiterungsordner öffnen",
-    "packageSaved": "Erweiterungsordner geöffnet; diesen Ordner im Browser auswählen",
-    "viewSource": "Quellcode auf GitHub ansehen"
   },
   "channelArchive": {
     "title": "Kanalvideo-Archiv",

@@ -144,13 +144,20 @@ pub fn get_ffprobe_path(app: &AppHandle) -> Result<PathBuf, String> {
     ))
 }
 
-/// 获取 Cookie 文件路径（存放在应用数据目录下）
-pub fn get_cookie_path(app: &AppHandle) -> Result<PathBuf, String> {
+/// 获取 cookie profile 派生文件目录（存放在应用数据目录下）
+pub fn get_cookie_dir(app: &AppHandle) -> Result<PathBuf, String> {
     let app_data = app
         .path()
         .app_data_dir()
         .map_err(|e| format!("err_app_data_dir:{}", e))?;
-    Ok(app_data.join("cookies.txt"))
+    Ok(app_data.join("cookies"))
+}
+
+/// 获取单个 cookie profile 交给 yt-dlp 使用的派生文件路径
+///
+/// 文件名使用前端生成的 profile ID，写盘前已在命令层做过字符白名单校验。
+pub fn get_cookie_profile_path(app: &AppHandle, id: &str) -> Result<PathBuf, String> {
+    Ok(get_cookie_dir(app)?.join(format!("{id}.txt")))
 }
 
 /// 获取 yt-dlp 插件目录路径

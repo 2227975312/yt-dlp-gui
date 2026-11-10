@@ -6,7 +6,7 @@ import { isValidUrl } from "@/utils/validate";
 import { mergeBilingualSrt, mergeBilingualVtt } from "@/utils/subtitle";
 import { useSettingStore } from "@/stores/setting";
 import { useStatusStore } from "@/stores/status";
-import { useVideoStore } from "@/stores/video";
+import { useCookieStore } from "@/stores/cookie";
 import { goToolList } from "@/utils/toolbox";
 import { useToolTask } from "@/composables/useToolTask";
 import { useI18n } from "vue-i18n";
@@ -17,7 +17,7 @@ const { t } = useI18n();
 const router = useRouter();
 const settingStore = useSettingStore();
 const statusStore = useStatusStore();
-const videoStore = useVideoStore();
+const cookieStore = useCookieStore();
 
 const goBack = () => goToolList(router);
 
@@ -87,10 +87,9 @@ const langOptions = computed<SelectOption[]>(() =>
 const handleFetch = async () => {
   const trimmedUrl = url.value.trim();
   try {
-    const { cookieFile, cookieBrowser } = await videoStore.getCookieArgs();
+    const cookieFile = await cookieStore.resolveAutoFile(trimmedUrl);
     await start(trimmedUrl, {
       cookieFile,
-      cookieBrowser,
       proxy: settingStore.proxy || null,
     });
   } catch (e: unknown) {

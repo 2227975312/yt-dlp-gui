@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { invoke } from "@tauri-apps/api/core";
 import { useSettingStore } from "@/stores/setting";
-import { useVideoStore } from "@/stores/video";
+import { useCookieStore } from "@/stores/cookie";
 import { showErrorDialog } from "@/utils/format";
 import { isValidUrl } from "@/utils/validate";
 import { useI18n } from "vue-i18n";
@@ -14,7 +14,7 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 const settingStore = useSettingStore();
-const videoStore = useVideoStore();
+const cookieStore = useCookieStore();
 
 const channelUrl = ref("");
 const loading = ref(false);
@@ -38,11 +38,10 @@ const handleSubmit = async () => {
   }
   loading.value = true;
   try {
-    const { cookieFile, cookieBrowser } = await videoStore.getCookieArgs();
+    const cookieFile = await cookieStore.resolveAutoFile(trimmed);
     const record = await invoke<ChannelRecord>("channel_add", {
       url: trimmed,
       cookieFile,
-      cookieBrowser,
       proxy: settingStore.proxy || null,
     });
     window.$message.success(t("channelArchive.addSuccess", { name: record.title }));

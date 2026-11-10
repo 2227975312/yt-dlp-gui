@@ -2,6 +2,7 @@ use tauri::{Emitter, Manager};
 
 mod app;
 mod commands;
+mod cookies;
 mod db;
 mod platform;
 mod utils;
@@ -76,19 +77,15 @@ pub fn run() {
             let db_state = db::init_database(app.handle())?;
             app.manage(db_state);
             tauri::async_runtime::spawn(commands::cleanup_tool_cache(app.handle().clone()));
-            app::browser_bridge::start(app.handle().clone());
             app::setup_tray(app)
         })
         .manage(app::commands::CliRequestState::new(initial_request))
-        .manage(app::browser_bridge::BrowserBridgeState::default())
         .manage(commands::DownloadState::default())
         .manage(platform::process::ProcessRegistry::default())
         .invoke_handler(tauri::generate_handler![
             app::commands::update_tray_menu,
             app::commands::set_tray_visible,
-            app::commands::reveal_browser_extension,
             app::commands::take_cli_open_request,
-            app::browser_bridge::take_browser_extension_imports,
             commands::get_platform,
             commands::set_tool_sources,
             commands::set_youtube_extractor_args,
@@ -108,7 +105,13 @@ pub fn run() {
             commands::import_plugin,
             commands::remove_plugin,
             commands::open_plugin_dir,
-            commands::save_cookie_text,
+            commands::cookie_profile_list,
+            commands::cookie_profile_file,
+            commands::cookie_profile_save,
+            commands::cookie_profile_delete,
+            commands::cookie_profile_reorder,
+            commands::cookie_preview_domains,
+            commands::cookie_profile_match,
             commands::fetch_video_info,
             commands::start_download,
             commands::cancel_download,

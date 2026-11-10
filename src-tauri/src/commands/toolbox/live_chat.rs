@@ -44,10 +44,9 @@ fn parse_live_chat_line(line: &str) -> Option<LiveChatMessage> {
         (renderer, "text")
     } else if let Some(renderer) = item.get("liveChatPaidMessageRenderer") {
         (renderer, "paid")
-    } else if let Some(renderer) = item.get("liveChatMembershipItemRenderer") {
-        (renderer, "membership")
     } else {
-        return None;
+        let renderer = item.get("liveChatMembershipItemRenderer")?;
+        (renderer, "membership")
     };
 
     let author = renderer
@@ -96,7 +95,6 @@ async fn download_live_chat(
     run_id: &str,
     url: &str,
     cookie_file: Option<&str>,
-    cookie_browser: Option<&str>,
     proxy: Option<&str>,
 ) -> Result<PathBuf, String> {
     let temp_dir = std::env::temp_dir().join(format!(
@@ -133,7 +131,7 @@ async fn download_live_chat(
     args.extend(utils::build_ffmpeg_location_args(app));
     args.extend(utils::build_plugin_args(app));
     args.extend(utils::build_youtube_extractor_args());
-    append_cookie_proxy_args(&mut args, cookie_file, cookie_browser, proxy);
+    append_cookie_proxy_args(&mut args, cookie_file, proxy);
     args.push(url.to_owned());
 
     let output = match run_ytdlp_capture(app, Some(run_id), args).await {
@@ -174,10 +172,9 @@ pub(crate) async fn fetch_live_chat(
     run_id: &str,
     url: &str,
     cookie_file: Option<&str>,
-    cookie_browser: Option<&str>,
     proxy: Option<&str>,
 ) -> Result<Vec<LiveChatMessage>, String> {
-    let temp_dir = download_live_chat(app, run_id, url, cookie_file, cookie_browser, proxy).await?;
+    let temp_dir = download_live_chat(app, run_id, url, cookie_file, proxy).await?;
     let result = async {
         let source = find_chat_file(&temp_dir).await?;
         let input = tokio::fs::File::open(source)

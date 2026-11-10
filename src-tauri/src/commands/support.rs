@@ -17,19 +17,12 @@ const HTTP_TIMEOUT: Duration = Duration::from_secs(300);
 pub fn append_cookie_proxy_args(
     args: &mut Vec<String>,
     cookie_file: Option<&str>,
-    cookie_browser: Option<&str>,
     proxy: Option<&str>,
 ) {
     if let Some(cf) = cookie_file {
         if !cf.is_empty() {
             args.push("--cookies".to_string());
             args.push(cf.to_string());
-        }
-    }
-    if let Some(browser) = cookie_browser {
-        if !browser.is_empty() {
-            args.push("--cookies-from-browser".to_string());
-            args.push(browser.to_string());
         }
     }
     if let Some(p) = proxy {
@@ -105,10 +98,9 @@ pub async fn run_ytdlp_json(
     url: &str,
     extra_args: &[&str],
     cookie_file: Option<&str>,
-    cookie_browser: Option<&str>,
     proxy: Option<&str>,
 ) -> Result<Value, String> {
-    run_ytdlp_json_tracked(app, None, url, extra_args, cookie_file, cookie_browser, proxy).await
+    run_ytdlp_json_tracked(app, None, url, extra_args, cookie_file, proxy).await
 }
 
 /// 同 `run_ytdlp_json`，额外把子进程 pid 登记到 `run_id` 名下，供工具任务取消时终止。
@@ -118,7 +110,6 @@ pub async fn run_ytdlp_json_tracked(
     url: &str,
     extra_args: &[&str],
     cookie_file: Option<&str>,
-    cookie_browser: Option<&str>,
     proxy: Option<&str>,
 ) -> Result<Value, String> {
     let mut args = vec![
@@ -142,7 +133,7 @@ pub async fn run_ytdlp_json_tracked(
     args.extend(utils::build_ffmpeg_location_args(app));
     args.extend(utils::build_plugin_args(app));
     args.extend(utils::build_youtube_extractor_args());
-    append_cookie_proxy_args(&mut args, cookie_file, cookie_browser, proxy);
+    append_cookie_proxy_args(&mut args, cookie_file, proxy);
     args.push(url.to_string());
 
     let output = run_ytdlp_capture(app, run_id, args).await?;
@@ -246,4 +237,3 @@ WARNING: [youtube] Some warning occurred
         assert!(parse_json_from_stdout(stdout).is_none());
     }
 }
-

@@ -1,7 +1,5 @@
 {
   "toolbox": {
-    "browserExtTitle": "Tiện ích trình duyệt",
-    "browserExtDesc": "Gửi URL video và cookie từ trình duyệt sang ứng dụng chỉ với một nhấp chuột",
     "thumbnailTitle": "Tải hình thu nhỏ",
     "thumbnailDesc": "Trích xuất hình thu nhỏ video và lưu thành JPG",
     "subtitlesTitle": "Tải phụ đề",
@@ -113,26 +111,6 @@
     "removeSuccess": "Đã xóa gói plugin \"{name}\"",
     "typeExtractor": "Trình trích xuất",
     "typePostprocessor": "Trình hậu xử lý"
-  },
-  "browserExt": {
-    "title": "Tiện ích trình duyệt",
-    "tagBeta": "Beta",
-    "intro": "Cài đặt tiện ích YDL GUI Helper trên trình duyệt nhân Chromium (Chrome / Edge / Brave / Vivaldi…) để gửi URL trang hiện tại và cookie cần thiết tới ứng dụng này chỉ bằng một cú nhấp — đặc biệt hữu ích cho video yêu cầu đăng nhập hoặc dành cho thành viên.",
-    "installHeading": "Cài đặt",
-    "install1": "Nhấp \"Mở thư mục tiện ích\" để hiển thị mã nguồn được cài cùng ứng dụng.",
-    "install2": "Mở chrome://extensions (hoặc edge://extensions) và bật \"Chế độ nhà phát triển\" ở góc trên bên phải.",
-    "install3": "Nhấp \"Tải tiện ích đã giải nén\" rồi chọn thư mục có manifest.json mà ứng dụng vừa mở.",
-    "install4": "Ghim biểu tượng YDL GUI Helper cạnh thanh địa chỉ để truy cập nhanh.",
-    "usageHeading": "Sử dụng",
-    "usage1": "Mở một trang video được hỗ trợ trong trình duyệt.",
-    "usage2": "Nhấp vào biểu tượng YDL GUI, hoặc nhấp chuột phải vào trang / liên kết video và chọn \"Gửi sang YDL GUI\".",
-    "usage3": "Ứng dụng sẽ tự động hiện lên với URL và cookie đã được điền sẵn trên trang chủ.",
-    "privacyHeading": "Quyền riêng tư",
-    "privacyNote": "Cookie chỉ được giữ cục bộ và ghi qua giao diện loopback 127.0.0.1. Cookie không nằm trong liên kết đánh thức và không được tải lên máy chủ.",
-    "supportedHeading": "Trang hỗ trợ",
-    "openLocalFolder": "Mở thư mục tiện ích",
-    "packageSaved": "Đã mở thư mục; hãy chọn thư mục này trong trình duyệt",
-    "viewSource": "Xem mã nguồn trên GitHub"
   },
   "channelArchive": {
     "title": "Lưu trữ video kênh",

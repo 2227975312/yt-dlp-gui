@@ -45,7 +45,6 @@ yt-dlp 功能强大，但命令行操作门槛较高。**yt-dlp GUI** 将其封�
 - **字幕提取** — 下载 SRT / VTT / ASS / LRC 格式字幕，支持双语字幕合成
 - **直播弹幕归档** — 提取 YouTube 直播回放弹幕，支持正则筛选，导出为 JSON / CSV
 - **插件管理** — 一键安装 yt-dlp 插件（如 ChromeCookieUnlock）
-- **浏览器扩展** — 配套 Chrome / Edge 扩展，一键将页面链接和 Cookie 发送到本应用（[详情](#浏览器扩展)）
 
 ### 进阶功能
 
@@ -54,7 +53,7 @@ yt-dlp 功能强大，但命令行操作门槛较高。**yt-dlp GUI** 将其封�
 - 格式转换：MP4 / MKV / WebM / MP3 / AAC / FLAC 等
 - 嵌入字幕、缩略图、元数据、章节到输出文件
 - SponsorBlock 集成 — 自动跳过赞助片段
-- Cookie 身份验证，支持年龄限制和会员专属内容
+- 多份 Cookie 配置，手动粘贴 Netscape 格式文本并按域名自动匹配
 - 代理支持（HTTP / SOCKS）
 - 下载限速
 - 亮色 / 暗色 / 跟随系统主题
@@ -107,7 +106,7 @@ chmod +x YDL.GUI_*.AppImage
 5. 返回首页，粘贴视频链接即可开始下载
 
 > [!TIP]
-> 如果遇到需要登录的视频，请在设置中配置 Cookie（支持 Netscape 格式文本或 Cookie 文件）。
+> 如果遇到需要登录的视频，请在「设置 → Cookie 配置」中新增一份 Cookie 配置：粘贴 Netscape 格式的 Cookie 文本，解析链接时会按域名自动匹配使用。
 
 ### 命令行自动化
 
@@ -121,36 +120,7 @@ yt-dlp-gui --url "https://example.com/video" \
   --deno-path "/path/to/deno"
 ```
 
-同时支持 `--参数=值` 写法，也可直接传入 HTTP(S) URL 而省略 `--url`。工具路径仅覆盖当前应用会话，应用不会更新或替换这些文件；应用已经运行时，再次执行命令会把请求转发到现有窗口。
-
-## 浏览器扩展
-
-仓库中的 [`browser-extension/`](./browser-extension/) 目录提供配套的 **YDL GUI 助手** 浏览器扩展，可通过本地协议（`ytdlp-gui://`）把当前标签页的链接和所需 Cookie 直接发送到桌面应用 — 无需复制粘贴，也不必单独导出 Cookie。
-
-### 亮点
-
-- popup 一键发送，或右键菜单（`把当前页面发送到 YDL GUI` / `用 YDL GUI 下载此链接` / `把选中的链接发送到 YDL GUI`）
-- 在支持站点上扩展图标会自动亮起角标
-- 跟随系统的明暗主题
-- Cookie 仅本地处理 — 通过本地协议直接传给应用，不会上传到任何服务器
-
-### 安装（Chrome / Edge / Brave / Vivaldi 等 Chromium 浏览器）
-
-扩展已随应用一起打包发布，无需单独下载。
-
-1. 在应用中打开「**工具箱 → 浏览器扩展**」，点击「**打开扩展目录**」。
-2. 打开 `chrome://extensions`（或 `edge://extensions`），在右上角启用「开发者模式」。
-3. 点击「加载已解压的扩展程序」，选择上一步打开的文件夹。
-4. 把 YDL GUI 助手图标固定在地址栏旁，方便随时使用。
-
-### 使用
-
-1. 在浏览器中打开支持的视频页面（YouTube、Bilibili、Twitch、Vimeo、Twitter/X、TikTok、Instagram、Facebook、Reddit、SoundCloud 等）。
-2. 点击 YDL GUI 图标，或在页面 / 视频链接上右键选择「发送到 YDL GUI」。
-3. 桌面应用自动唤起，链接和 Cookie 已预填到首页。
-
-> [!NOTE]
-> 请确保已安装并运行 YDL GUI 桌面应用，浏览器才能成功唤起。
+同时支持 `--参数=值` 写法，也可直接传入 HTTP(S) URL 而省略 `--url`。工具路径仅覆盖当前应用会话，应用不会更新或替换这些文件。`--cookies` 仅在本次调用中生效，不会修改已保存的 Cookie 配置；应用已经运行时，再次执行命令会把请求转发到现有窗口。
 
 ## 技术栈
 

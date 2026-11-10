@@ -20,7 +20,8 @@
     "downloadFailed": "Error en la descarga: {e}",
     "copy": "Copiar",
     "open": "Abrir",
-    "openFolder": "Abrir carpeta"
+    "openFolder": "Abrir carpeta",
+    "add": "Añadir"
   },
   "nav": {
     "home": "Inicio",

@@ -145,8 +145,11 @@ pub fn db_add_history_batch(
 #[tauri::command]
 pub fn db_remove_history(state: State<'_, DatabaseState>, url: String) -> Result<(), String> {
     let conn = state.conn.lock().map_err(|e| e.to_string())?;
-    conn.execute("DELETE FROM parse_history WHERE url = ?1", params![url.trim()])
-        .map_err(|e| e.to_string())?;
+    conn.execute(
+        "DELETE FROM parse_history WHERE url = ?1",
+        params![url.trim()],
+    )
+    .map_err(|e| e.to_string())?;
     Ok(())
 }
 

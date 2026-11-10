@@ -1,6 +1,6 @@
 use rusqlite::{Connection, Result};
 
-const CURRENT_SCHEMA_VERSION: i32 = 6;
+const CURRENT_SCHEMA_VERSION: i32 = 7;
 
 pub fn get_schema_version(conn: &Connection) -> Result<i32> {
     conn.query_row("PRAGMA user_version", [], |row| row.get(0))
@@ -121,6 +121,25 @@ pub fn run_migrations(conn: &Connection) -> Result<()> {
 
     if current_version < 6 {
         ensure_channel_video_accuracy_column(conn)?;
+    }
+
+    if current_version < 7 {
+        conn.execute_batch(
+            r#"
+            CREATE TABLE IF NOT EXISTS cookie_profiles (
+                id TEXT PRIMARY KEY NOT NULL,
+                name TEXT NOT NULL,
+                content TEXT NOT NULL,
+                domains_json TEXT NOT NULL DEFAULT '[]',
+                enabled INTEGER NOT NULL DEFAULT 1,
+                sort_order INTEGER NOT NULL DEFAULT 0,
+                cookie_count INTEGER NOT NULL DEFAULT 0,
+                created_at INTEGER NOT NULL,
+                updated_at INTEGER NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS idx_cookie_profiles_order ON cookie_profiles(sort_order ASC);
+            "#,
+        )?;
     }
 
     conn.execute(

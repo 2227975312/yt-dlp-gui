@@ -1,8 +1,8 @@
 //! 下载子进程的创建与生命周期启动。
 
-use crate::utils;
 #[cfg(target_os = "windows")]
 use crate::commands::CREATE_NO_WINDOW;
+use crate::utils;
 use std::process::Stdio;
 use tauri::{AppHandle, Manager};
 
@@ -94,7 +94,8 @@ pub async fn start_download(
     }
 
     // 真正直接由 Rust 后端写入 SQLite 下载中状态
-    let _ = crate::db::tasks::mark_task_downloading(&app.state::<crate::db::DatabaseState>(), &task_id);
+    let _ =
+        crate::db::tasks::mark_task_downloading(&app.state::<crate::db::DatabaseState>(), &task_id);
 
     let stdout = child.stdout.take().ok_or("err_capture_stdout")?;
     let stderr = child.stderr.take().ok_or("err_capture_stderr")?;

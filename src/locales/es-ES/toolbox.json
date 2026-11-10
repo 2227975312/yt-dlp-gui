@@ -1,7 +1,5 @@
 {
   "toolbox": {
-    "browserExtTitle": "Extensión del navegador",
-    "browserExtDesc": "Envía URLs de vídeo y cookies del navegador a la app con un clic",
     "thumbnailTitle": "Descargar miniatura",
     "thumbnailDesc": "Extrae las miniaturas del vídeo y guárdalas como JPG",
     "subtitlesTitle": "Descargar subtítulos",
@@ -113,26 +111,6 @@
     "removeSuccess": "Paquete de complementos \"{name}\" eliminado",
     "typeExtractor": "Extractor",
     "typePostprocessor": "Postprocesador"
-  },
-  "browserExt": {
-    "title": "Extensión del navegador",
-    "tagBeta": "Beta",
-    "intro": "Instala la extensión YDL GUI Helper en navegadores basados en Chromium (Chrome / Edge / Brave / Vivaldi, etc.) para enviar la URL de la página actual y las cookies necesarias a esta aplicación con un solo clic, especialmente útil para vídeos que requieren inicio de sesión o son exclusivos para miembros.",
-    "installHeading": "Instalación",
-    "install1": "Pulsa «Abrir carpeta de la extensión» arriba a la derecha para mostrar el código instalado con la app.",
-    "install2": "Abre chrome://extensions (o edge://extensions) y activa el «Modo desarrollador» arriba a la derecha.",
-    "install3": "Pulsa «Cargar extensión sin empaquetar» y selecciona la carpeta abierta por la app que contiene manifest.json.",
-    "install4": "Fija el icono de YDL GUI Helper junto a la barra de direcciones para acceso rápido.",
-    "usageHeading": "Uso",
-    "usage1": "Abre una página de vídeo compatible en el navegador.",
-    "usage2": "Pulsa el icono de YDL GUI o haz clic derecho en la página o un enlace y elige «Enviar a YDL GUI».",
-    "usage3": "Esta aplicación pasará a primer plano automáticamente con la URL y las cookies ya rellenadas en la página de inicio.",
-    "privacyHeading": "Privacidad",
-    "privacyNote": "Las cookies permanecen en el equipo y se escriben mediante la interfaz local 127.0.0.1. No se incluyen en el enlace de activación ni se suben a servidores.",
-    "supportedHeading": "Sitios compatibles",
-    "openLocalFolder": "Abrir carpeta de la extensión",
-    "packageSaved": "Carpeta abierta; selecciónala en el navegador",
-    "viewSource": "Ver código fuente en GitHub"
   },
   "channelArchive": {
     "title": "Archivo de vídeos de canales",

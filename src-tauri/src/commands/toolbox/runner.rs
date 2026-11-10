@@ -21,7 +21,6 @@ pub(super) async fn run_ytdlp_tool(
     download_dir: &str,
     extra_args: Vec<String>,
     cookie_file: Option<&str>,
-    cookie_browser: Option<&str>,
     proxy: Option<&str>,
 ) -> Result<String, String> {
     let mut args = vec![
@@ -49,7 +48,7 @@ pub(super) async fn run_ytdlp_tool(
     args.push(output_template);
 
     args.extend(extra_args);
-    append_cookie_proxy_args(&mut args, cookie_file, cookie_browser, proxy);
+    append_cookie_proxy_args(&mut args, cookie_file, proxy);
     args.push(url.to_string());
 
     let output = run_ytdlp_capture(app, run_id, args).await?;
